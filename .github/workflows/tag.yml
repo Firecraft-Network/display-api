@@ -1,2 +1,23 @@
-- name: Create an incremental tag
-  uses: aurestic/incremental-tag@1.0.8
+name: Tagging
+
+on:
+  push:
+    branches: 'release'
+
+jobs:
+  build:
+    name: Bump tag
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create an incremental release
+      uses: aurestic/incrementarl-create-release@master
+      with:
+        flag_branch: true
+        message: Bump version
+        prev_tag: 'v'
+        update_odoo_module_version: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
