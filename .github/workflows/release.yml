@@ -27,7 +27,7 @@ jobs:
       run: mvn -B package install --file pom.xml
       
     - name: Upload API Jar  
-      uses: actions/upload-artifcat@v2
+      uses: actions/upload-artifact@v2
       with:
         name: dispatch-api
         path: target/dispatch-api.jar
