@@ -42,7 +42,7 @@ jobs:
       uses: actions/download-artifact@v2
       id: download_jar
       with:
-        name: dispatch-api
+        name: dispatch-api.jar
         
     - uses: actions/checkout@v2
     - name: Bump version tag
