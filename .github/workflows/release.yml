@@ -68,6 +68,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dispatch-api.jar
+        asset_path: ./dispatch-api
         asset_name: dispatch-api-${{ steps.tag_version.outputs.new_tag }}.jar
         asset_content_type: application/jar
