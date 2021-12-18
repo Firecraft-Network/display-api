@@ -17,7 +17,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           default_bump: false
-          custom_tag: v${{ steps.tag_version}}
           tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: ${{ steps.tag_version.outputs.new_tag }}
+          name: ${{ steps.tag_version }}
           body: ${{ steps.tag_version.outputs.changelog }}
