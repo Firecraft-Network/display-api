@@ -18,5 +18,5 @@ jobs:
         with:
           default_bump: false
           tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: ${{ steps.tag_version }}
+          name: ${{ steps.tag_version.outputs.new_version }}
           body: ${{ steps.tag_version.outputs.changelog }}
