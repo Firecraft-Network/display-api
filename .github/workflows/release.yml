@@ -29,7 +29,7 @@ jobs:
     - name: Upload API Jar  
       uses: actions/upload-artifact@v2
       with:
-        name: dispatch-api.jar
+        name: dispatch-api
         path: target/dispatch-api.jar
     - name: print
       run: ls
@@ -43,7 +43,7 @@ jobs:
     - name: Download API Jar
       uses: actions/download-artifact@v2
       with:
-        name: dispatch-api.jar
+        name: dispatch-api
         
     - uses: actions/checkout@v2
     - name: Bump version tag
@@ -67,6 +67,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: /home/runner/work/dispatch-api/dispatch-api/target/dispatch-api.jar
+        asset_path: ./dispatch-api.jar
         asset_name: dispatch-api-${{ steps.tag_version.outputs.new_tag }}.jar
         asset_content_type: application/jar
