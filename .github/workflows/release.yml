@@ -31,6 +31,8 @@ jobs:
       with:
         name: dispatch-api.jar
         path: target/dispatch-api.jar
+    - name: print
+      run: ls
         
   release-project:
     
