@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: Java CI with Maven
+name: Release Version
 
 on:
   push:
@@ -10,34 +10,50 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build-project:
   
     runs-on: ubuntu-latest
     
     steps:
+  
     - uses: actions/checkout@v2
-    - name: Set up JDK 11
+    - name: Set up JDK
       uses: actions/setup-java@v2
       with:
         java-version: '17'
         distribution: 'adopt'
         cache: maven
+        
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+      
+  release-project:
+    
+    runs-on: ubuntu-latest
+    
+    steps:
     - uses: actions/checkout@v2
     - name: Bump version and push tag
       id: tag_version
       uses: mathieudutour/github-tag-action@v6.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload API Jar
-      uses: actions/upload-artifact@v2.3.1
-      with:
-        name: target/dispatch-api.jar
+        
     - name: Create a GitHub release
+      id: create_release
       uses: ncipollo/release-action@v1
       with:
         default_bump: false
         tag: ${{ steps.tag_version.outputs.new_tag }}
         name: ${{ steps.tag_version.outputs.new_tag }}
         body: ${{ steps.tag_version.outputs.changelog }}
+        
+    - name: Upload API Jar
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./target/dispatch-api.jar
+        asset_name: dispatch-api-${{ steps.tag_version.outputs.new_tag }}
+        asset-content_type: application/jar
