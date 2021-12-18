@@ -30,6 +30,7 @@ jobs:
   release-project:
     
     runs-on: ubuntu-latest
+    needs: build-project
     
     steps:
     - uses: actions/checkout@v2
@@ -56,4 +57,4 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./target/dispatch-api.jar
         asset_name: dispatch-api-${{ steps.tag_version.outputs.new_tag }}
-        asset-content_type: application/jar
+        asset_content_type: application/jar
