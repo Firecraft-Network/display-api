@@ -38,9 +38,9 @@ jobs:
     needs: build-project
     
     steps:
+    - uses: actions/download-artificaft@v2
     - name: Download API Jar
       id: download_jar
-      uses: actions/download-artificaft@v2
       with:
         name: dispatch-api
         
@@ -50,18 +50,18 @@ jobs:
       uses: mathieudutour/github-tag-action@v6.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        
+   
+   - uses: ncipollo/release-action@v1
     - name: Create a GitHub release
       id: create_release
-      uses: ncipollo/release-action@v1
       with:
         default_bump: false
         tag: ${{ steps.tag_version.outputs.new_tag }}
         name: ${{ steps.tag_version.outputs.new_tag }}
         body: ${{ steps.tag_version.outputs.changelog }}
-        
+       
+    - uses: actions/upload-release-asset@v1
     - name: Upload Release API asset
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
