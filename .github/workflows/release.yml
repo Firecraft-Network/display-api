@@ -41,7 +41,7 @@ jobs:
     - name: Download API Jar
       uses: actions/download-artifact@v2
       with:
-        name: ./dispatch-api.jar
+        name: dispatch-api.jar
         
     - uses: actions/checkout@v2
     - name: Bump version tag
