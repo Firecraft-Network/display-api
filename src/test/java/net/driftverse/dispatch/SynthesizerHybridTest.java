@@ -127,7 +127,7 @@ public class SynthesizerHybridTest {
 		}
 	}
 
-	@Test(timeout = 200)
+	//@Test(timeout = 200)
 	public void cycle() {
 		SynthesizerImpl<NumSyn, Integer> synthesizer = new SynthesizerImpl<>(false, numSyn());
 
