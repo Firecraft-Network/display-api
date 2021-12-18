@@ -13,7 +13,12 @@
 		<paper-version>1.18.1-R0.1-SNAPSHOT</paper-version>
 	</properties>
 
-
+	<pluginRepositories>
+		<pluginRepository>
+			<id>maven-snapshots</id>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
@@ -40,7 +45,7 @@
 
 
 	<build>
-
+		<finalName>${artifactId}</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/resources/</directory>
@@ -80,6 +85,49 @@
 					<finalName>${artifactId}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.3.0-SNAPSHOT</version>
+				<configuration>
+					<relocations>
+						<relocation>
+							<pattern>com.google.common</pattern>
+							<shadedPattern>net.driftverse.dispatch.dependencies.com.google.common</shadedPattern>
+						</relocation>
+						<relocation>
+							<pattern>org.apache.commons.lang3</pattern>
+							<shadedPattern>net.driftverse.dispatch.dependencies.org.apache.commons.lang3</shadedPattern>
+						</relocation>
+					</relocations>
+					<minimizeJar>true</minimizeJar>
+					<filters>
+						<filter>
+							<artifact>*:*</artifact>
+							<excludes>
+								<exclude>META-INF/*.MF</exclude>
+								<exclude>module-info.java</exclude>
+								<exclude>module-info.class</exclude>
+								<exclude>META-INF/*.SF</exclude>
+								<exclude>META-INF/*.DSA</exclude>
+								<exclude>META-INF/*.RSA</exclude>
+								<exclude>META-INF/LICENSE.txt</exclude>
+								<exclude>META-INF/LICENSE</exclude>
+								<exclude>META-INF/NOTICE</exclude>
+								<exclude>META-INF.versions.9.module-info</exclude>
+							</excludes>
+						</filter>
+					</filters>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
