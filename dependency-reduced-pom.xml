@@ -59,14 +59,13 @@
           <relocations>
             <relocation>
               <pattern>com.google.common</pattern>
-              <shadedPattern>net.driftverse.dependencies.com.google.common</shadedPattern>
+              <shadedPattern>net.driftverse.dispatch.dependencies.com.google.common</shadedPattern>
             </relocation>
             <relocation>
               <pattern>org.apache.commons.lang3</pattern>
-              <shadedPattern>net.driftverse.dependencies.org.apache.commons.lang3</shadedPattern>
+              <shadedPattern>net.driftverse.dispatch.dependencies.org.apache.commons.lang3</shadedPattern>
             </relocation>
           </relocations>
-          <minimizeJar>true</minimizeJar>
           <filters>
             <filter>
               <artifact>*:*</artifact>

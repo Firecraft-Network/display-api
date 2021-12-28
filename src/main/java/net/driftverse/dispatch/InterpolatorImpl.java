@@ -11,7 +11,7 @@ import net.driftverse.dispatch.api.Interpolator;
 import net.driftverse.dispatch.api.enums.Cycle;
 import net.driftverse.dispatch.api.enums.Timing;
 
-final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<Dispatch>> implements Interpolator<Dispatch> {
+public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<Dispatch>> implements Interpolator<Dispatch> {
 
 	/* 60 Gives us a 3 second buffer room */
 	private final LinkedBlockingQueue<Dispatch> dispatches = new LinkedBlockingQueue<>(60);

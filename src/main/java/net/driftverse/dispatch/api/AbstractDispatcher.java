@@ -22,18 +22,6 @@ public abstract class AbstractDispatcher<Reciver, Slot, Dispatch extends Compara
 	}
 
 	@Override
-	public final <S extends Synthesizer<S, F>, F> int schedule(Reciver player, Slot slot, S synthesizer,
-			BiConsumer<F, Dispatch> adapter) {
-		return schedule(player, Mode.SUCESSIVE, slot, synthesizer, adapter);
-	}
-
-	@Override
-	public final <S extends Synthesizer<S, F>, F> Map<Reciver, Integer> schedule(Slot slot, S synthesizer,
-			BiConsumer<F, Dispatch> adapter) {
-		return schedule(Mode.SUCESSIVE, slot, synthesizer, adapter);
-	}
-
-	@Override
 	public final void unschedule(int id) {
 		// TODO Auto-generated method stub
 

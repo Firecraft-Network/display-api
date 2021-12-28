@@ -3,12 +3,9 @@ package net.driftverse.dispatch.api;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public interface Synthesizer<S extends Synthesizer<S, Frame>, Frame> extends Serializable {
 
-	Logger logger();
-	
 	Class<Frame> frame();
 
 	/**

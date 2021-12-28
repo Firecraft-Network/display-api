@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.driftverse</groupId>
 	<artifactId>dispatch-api</artifactId>
@@ -8,7 +6,7 @@
 	<name>Dispatch API</name>
 
 	<properties>
-		<java.version>16</java.version>
+		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<paper-version>1.18.1-R0.1-SNAPSHOT</paper-version>
 	</properties>
@@ -39,7 +37,14 @@
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
 			<version>1.0</version>
+		</dependency> <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+		<!-- https://mvnrepository.com/artifact/log4j/log4j -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
 		</dependency>
+
 
 	</dependencies>
 
@@ -86,6 +91,8 @@
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 			</plugin>
+
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -101,7 +108,6 @@
 							<shadedPattern>net.driftverse.dispatch.dependencies.org.apache.commons.lang3</shadedPattern>
 						</relocation>
 					</relocations>
-					<minimizeJar>true</minimizeJar>
 					<filters>
 						<filter>
 							<artifact>*:*</artifact>

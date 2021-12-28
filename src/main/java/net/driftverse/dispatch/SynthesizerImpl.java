@@ -1,9 +1,9 @@
 package net.driftverse.dispatch;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import net.driftverse.dispatch.api.Synthesizer;
 
@@ -16,52 +16,75 @@ final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> implements S
 	 * 
 	 */
 
+	enum Stage {
+		DELAY, CUMMULATIVE, CYCLE, CYCLE_DELAY, FINAL_DELAY, COMPLETE;
+	}
+
 	private static final long serialVersionUID = -6929614682548836365L;
 
 	private final int seed = new Random().nextInt();
 	private final long sync = System.currentTimeMillis();
 
+	private final Logger logger;
 	private final Synthesizer<S, Frame> implemented;
 	private final boolean intervalSupport;
 
 	private final Class<Frame> frame;
-	private final int delay, interval, cycles, cycleDelay, finalDelay, cummulativeTicks;
+	private final int delay, interval, cycles, cycleDelay, finalDelay;
 	private final boolean reversed, shuffled, synced, infinite;
-
-	// Integer represents master tick a cycle completed on, this list changes when
-	// synthesize or skip is
-	// called
-	private final List<Integer> completedCycles = new ArrayList<>();
 
 	private final List<Frame> cummulativeFrames;
 
-	private int ticks = -1;
-	private int cycleLength, frames;
+	private Stage stage = Stage.DELAY;
+	private int completedCycles, ticks = -1;
+	private int frames;
 
-	public SynthesizerImpl(boolean intervalSupport, Synthesizer<S, Frame> synthesizer) {
+	public SynthesizerImpl(Logger logger, boolean intervalSupport, Synthesizer<S, Frame> synthesizer) {
+
+		this.logger = logger;
+
 		this.intervalSupport = intervalSupport;
+		logger.trace("Inverval support = " + intervalSupport);
+
 		this.implemented = synthesizer;
+
 		this.frame = synthesizer.frame();
+		logger.trace("Frame type = " + frame.getTypeName());
 
 		this.reversed = synthesizer.reversed();
+		logger.trace("Reversed = " + reversed);
+
 		this.shuffled = synthesizer.shuffled();
+		logger.trace("Shuffled = " + shuffled);
+
 		this.synced = synthesizer.synced();
+		logger.trace("Synced = " + synced);
 
 		this.delay = !reversed ? synthesizer.delay() : synthesizer.finalDelay();
+		logger.trace("Delay = " + delay);
+
 		this.interval = synthesizer.interval();
+		logger.trace("Interval = " + interval);
+
 		this.cycles = synthesizer.cycles();
+		logger.trace("Cycles = " + cycles);
+
 		this.cycleDelay = synthesizer.cycleDelay();
+		logger.trace("Cycle Delay = " + cycleDelay);
+
 		this.finalDelay = !reversed ? synthesizer.finalDelay() : synthesizer.delay();
+		logger.trace("Final Delay = " + finalDelay);
 
 		this.infinite = delay < 0 || cycles <= 0 || finalDelay < 0;
+		logger.trace("Infinite = " + infinite);
 
 		List<Frame> cummulativeFrames = synthesizer.cumulativeSynthesis();
 
 		this.cummulativeFrames = cummulativeFrames == null ? List.of() : cummulativeFrames;
+		logger.trace("Cummulative Frames = " + cummulativeFrames.size());
 
-		this.cummulativeTicks = cummulativeFrames.size() * interval;
-
-		updateCycle();
+		this.frames = synthesizer.frames();
+		logger.trace("Current Frames = " + frames);
 
 	}
 
@@ -81,235 +104,114 @@ final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> implements S
 		return seed;
 	}
 
-	void updateCycle() {
-		frames = frames();
-		cycleLength = frames * interval + cycleDelay;
-	}
-
 	public Frame synthesize() {
-		ticks = synced ? (int) ((System.currentTimeMillis() - sync) / 50) : ++ticks;
+		++ticks;
 
-		int remainingDelay = Math.max(0, delay - ticks);
-
-		/**
-		 * The put method is used here so Styx DispatcherImpl knows the difference
-		 * between a cycle delay and initial delay. This is useful for Dispatchers with
-		 * interval support.
-		 **/
-		if (remainingDelay > 0) {
-			System.out.println("Delay");
-			return intervalSupport() ? null : randomSynthesis(0);
-		}
-
-		if (!cummulativeFrames.isEmpty() && ticks < cummulativeTicks + delay) {
-
-			System.out.println("Cummulative");
-			return intervalSupport() && (ticks - delay) % interval != 0 ? null
-					: cummulativeFrames.get((ticks - delay) / interval);
-		}
-
-		if (getCycleFrame() == frames) {
-			System.out.println("Completed cycle");
-			completedCycles.add(ticks);
-			updateCycle();
-		}
-
-		if (isInCycleDelay()) {
-
-			System.out.println("Cycle Delay");
-			/**
-			 * If the slot supports intervals, a blank interpolation is returned as a
-			 * DispatcherImpl signifier that we are on a delay of some sort.
-			 * 
-			 * If the slot does NOT support intervals, the final frame/interpolation of the
-			 * cycle is returned.
-			 **/
-			return intervalSupport() ? null : reversed ? randomSynthesis(0) : randomSynthesis(frames - 1);
-		}
-
-		/**
-		 * Only if the slot supports interval and has a frame that is being repeated.
-		 */
-		if (intervalSupport && getCycleFrame() % interval != 0) {
-			/**
-			 * If the slot supports intervals, a blank interpolation is returned as a Styx
-			 * DispatcherImpl signifier that we are on a delay of some sort.
-			 * 
-			 **/
-
-			System.out.println("Null frame (interval support)");
+		switch (stage) {
+		case COMPLETE:
 			return null;
+		case CUMMULATIVE:
+			return cummulativeSynthesize();
+		case CYCLE:
+			return cycleSynthesize();
+		case CYCLE_DELAY:
+			return cycleDelaySynthesize();
+		case DELAY:
+			return delaySynthesize();
+		case FINAL_DELAY:
+			return finalDelaySynthesize();
+		default:
+			String msg = "Synthesizer Impl has broken due to an unknown error, stage = " + stage;
+			logger.error(msg);
+			throw new RuntimeException(msg);
 		}
 
-		if (isInFinalDelay()) {
+	}
 
-			System.out.println("Final Delay");
-			int interpolation = getFinalDelayInterpolation();
+	Frame delaySynthesize() {
+		Integer frame = Util.delayFrame(logger, this, intervalSupport, frames, ticks);
 
-			/**
-			 * If the the interpolation is -1 we have nothing more to dispatch so return
-			 * null to tell the Styx DispatcherImpl we are complete;
-			 */
-			return interpolation == -1 ? null : randomSynthesis(interpolation);
+		Integer nextFrame = Util.delayFrame(logger, this, intervalSupport, frames, ticks + 1);
+
+		logger.trace("Delay next frame = " + nextFrame);
+
+		if (nextFrame != null && nextFrame == -1) {
+			stage(Stage.CUMMULATIVE);
 		}
 
-		/**
-		 * If this part of the code is reached, we are not on a delay of any sort and
-		 * the interpolation should be calculated out.
-		 */
+		Frame f = frame != null ? randomSynthesis(frame) : null;
 
-		int interpolation = getInterpolation();
-
-		System.out.println("Normal Frame");
-		return randomSynthesis(interpolation);
-
+		logger.trace("Delay Frame " + f);
+		return f;
 	}
 
-	public int getCycleFrame() {
+	Frame cummulativeSynthesize() {
+		Integer frame = Util.cummulativeFrame(this, intervalSupport, cummulativeFrames.size(), ticks);
 
-		/**
-		 * Remove the initial delay, then take the modulus to find what tick // you are
-		 * on in the current cycle. If the cycle length is 10, // you can be between 0 &
-		 * 9 ticks
-		 **/
+		Integer nextFrame = Util.cummulativeFrame(this, intervalSupport, cummulativeFrames.size(), ticks + 1);
 
-		return ((ticks - delay - cummulativeTicks) % cycleLength);
-	}
-
-	public int cycleTick() {
-		if (completedCycles.isEmpty()) {
-			return ticks;
+		if (nextFrame != null && nextFrame == -1) {
+			stage(Stage.CYCLE);
+			this.frames = frames();
 		}
 
-		return (int) ((ticks - completedCycles.get(completedCycles.size() - 1)));
+		return frame != null ? cummulativeFrames.get(frame) : null;
 	}
 
-	public int getInterpolation() {
+	Frame cycleSynthesize() {
 
-		/**
-		 * If the we are still in a delay, return -1 to signify there is no
-		 * interpolation to send
-		 **/
-		if (ticks - delay - cummulativeTicks < 0) {
-			return -1;
-		}
+		Integer frame = Util.cycleFrame(this, intervalSupport, cummulativeFrames.size(), ticks);
 
-		if (shuffled) {
-			return getRandomInterpolation(ticks);
-		}
+		Integer nextFrame = Util.cycleFrame(this, intervalSupport, cummulativeFrames.size(), ticks + 1);
 
-		/**
-		 * Remove the delay from the ticks, make ticks relative to 1 cycle. Divide by
-		 * the interval to find the interpolation.
-		 */
+		if (nextFrame != null && nextFrame == -1) {
 
-		int interpolation = (((ticks - delay - cummulativeTicks) % cycleLength) / interval) % frames;
-
-		return reversed ? frames - interpolation : interpolation; // When reversed, we
-																	// must increment
-		// backwards
-	}
-
-	public int getRandomInterpolation(int ticks) {
-
-		/**
-		 * Some random math I found online, this worked during the tests. Idk why this
-		 * works, but it does.
-		 */
-		double random = 2920.f * Math.sin(seed * 21942.f + ticks * 171324.f + 8912.f)
-				* Math.cos(seed * 23157.f * ticks * 217832.f + 9758.f);
-
-		return (int) Math.abs(random % frames);
-
-	}
-
-	public boolean isInCycleDelay() {
-		/**
-		 * Remove the delay, make the ticks relative to a single cycle. Then divide by
-		 * the length of 1 cycle length and remove the cycle delay
-		 **/
-
-		return (((ticks - delay - cummulativeTicks) % cycleLength) / (cycleLength - cycleDelay)) >= 1;
-	}
-
-	public boolean isInFinalDelay() {
-		/**
-		 * If infinite we will never reach the final delay.
-		 * 
-		 * If NOT infinite, any tick greater than the total ticks - final delay is a
-		 * final frame
-		 */
-
-		return !infinite && completedCycles.size() == cycles;
-	}
-
-	public int getFinalDelayInterpolation() {
-
-		/**
-		 * If the slot has interval support, do not send the final frame again and
-		 * again.
-		 */
-
-		if (intervalSupport) {
-
-			long endTime = completedCycles.isEmpty() ? 0 : finalDelay + completedCycles.get(completedCycles.size() - 1);
-
-			return ticks == endTime ? reversed ? 0 : frames - 1 : -1;
-		}
-
-		if (shuffled) {
-			/* Some "arbitrary" number */
-			return getRandomInterpolation(69 + 420 + 666) % frames;
-		}
-
-		return reversed ? 0 : frames - 1; // When reversed the first frame
-		// should be used as the last frame.
-	}
-
-	public boolean isComplete() {
-
-		int lastCompleted = completedCycles.isEmpty() ? 0 : completedCycles.get(completedCycles.size() - 1);
-
-		/** If infinite this can never be complete **/
-		return !infinite && completedCycles.size() == cycles && ticks - lastCompleted > finalDelay - 1;
-	}
-
-	public void skip(int ticks) {
-		if (!synced && !isComplete()) {
-
-			this.ticks += ticks;
-
-			ticks = completedCycles.isEmpty() ? this.ticks
-					: this.ticks - completedCycles.get(completedCycles.size() - 1);
-
-			int skippedCycles = ticks / cycleLength;
-
-			System.out.println("Skipped Cycles: " + skippedCycles);
-			for (int i = 0; i < skippedCycles; ++i) {
-				completedCycles.add(this.ticks + i * cycleLength);
+			++completedCycles;
+			
+			if (completedCycles == cycles) {
+				stage(Stage.FINAL_DELAY);
+			} else {
+				stage(Stage.CYCLE_DELAY);
 			}
 
-			completedCycles.removeIf(c -> c > this.ticks); // Remove completed cycles when skipping backwards
-
 		}
+		return frame != null ? randomSynthesis(frame) : null;
+	}
+
+	Frame cycleDelaySynthesize() {
+
+		Integer frame = Util.cycleDelayFrame(logger, this, intervalSupport, cummulativeFrames.size(), ticks);
+
+		Integer nextFrame = Util.cycleDelayFrame(logger, this, intervalSupport, cummulativeFrames.size(), ticks + 1);
+
+		if (nextFrame != null && nextFrame == -1) {
+			stage(Stage.CYCLE);
+			this.frames = frames();
+		}
+
+		return frame != null ? randomSynthesis(frame) : null;
+	}
+
+	Frame finalDelaySynthesize() {
+
+		Integer frame = Util.finalDelayFrame(logger, this, intervalSupport, cummulativeFrames.size(), ticks);
+
+		Integer nextFrame = Util.finalDelayFrame(logger, this, intervalSupport, cummulativeFrames.size(), ticks + 1);
+
+		if (nextFrame != null && nextFrame == -1) {
+			stage(Stage.COMPLETE);
+		}
+
+		return frame != null ? randomSynthesis(frame) : null;
+
 	}
 
 	public int ticks() {
 		return (int) (synced ? ((System.currentTimeMillis() - sync) / 50) : ticks);
 	}
 
-	public int cummulativeTicks() {
-		return cummulativeTicks;
-	}
-
 	public boolean infinite() {
 		return infinite;
-	}
-
-	@Override
-	public Logger logger() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -416,4 +318,17 @@ final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> implements S
 		return synced;
 	}
 
+	public void stage(Stage stage) {
+		logger.trace("Changing stage from " + this.stage + " -> " + stage);
+		this.stage = stage;
+		this.ticks = -1;
+	}
+
+	public Stage stage() {
+		return stage;
+	}
+
+	public int completedCycles() {
+		return this.completedCycles;
+	}
 }
