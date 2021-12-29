@@ -13,6 +13,7 @@ public final class Failed implements ScheduleResult {
 	public Result result() {
 		return Result.FAILED;
 	}
+
 	public int hashCode() {
 		return result().hashCode();
 	}

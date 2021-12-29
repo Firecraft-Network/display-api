@@ -17,7 +17,7 @@ public final class Cancelled implements ScheduleResult {
 	public int hashCode() {
 		return result().hashCode();
 	}
-	
+
 	public String toString() {
 		return result().toString();
 	}

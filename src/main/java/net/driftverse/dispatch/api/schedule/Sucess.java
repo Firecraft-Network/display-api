@@ -21,7 +21,7 @@ public final class Sucess implements ScheduleResult {
 	}
 
 	public int hashCode() {
-		return result().hashCode() * 7 * id();
+		return id();
 	}
 
 	public String toString() {

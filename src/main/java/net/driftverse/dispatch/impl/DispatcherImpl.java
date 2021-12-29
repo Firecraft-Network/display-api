@@ -39,7 +39,6 @@ public class DispatcherImpl<Slot, Dispatch extends Comparable<Dispatch>> extends
 
 	}
 
-
 	@Override
 	public boolean supportsIntervals() {
 		return false;

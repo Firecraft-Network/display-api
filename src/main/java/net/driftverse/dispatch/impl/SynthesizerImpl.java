@@ -140,7 +140,7 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 			stage(Stage.CUMMULATIVE);
 		}
 
-		Frame f = frame != null ? randomSynthesis(frame) : null;
+		Frame f = synthesize(frame);
 
 		logger.trace("Delay Frame " + f);
 		return f;
@@ -156,14 +156,15 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 			this.frames = frames();
 		}
 
-		return frame != null ? cummulativeFrames.get(frame) : null;
+		return frame != null ? cummulativeFrames.get(shuffled() ? random(frame, cummulativeFrames.size()) : frame)
+				: null;
 	}
 
 	Frame cycleSynthesize() {
 
-		Integer frame = Util.cycleFrame(this, intervalSupport, cummulativeFrames.size(), ticks);
+		Integer frame = Util.cycleFrame(this, intervalSupport, frames, ticks);
 
-		Integer nextFrame = Util.cycleFrame(this, intervalSupport, cummulativeFrames.size(), ticks + 1);
+		Integer nextFrame = Util.cycleFrame(this, intervalSupport, frames, ticks + 1);
 
 		if (nextFrame != null && nextFrame == -1) {
 
@@ -176,34 +177,57 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 			}
 
 		}
-		return frame != null ? randomSynthesis(frame) : null;
+		return synthesize(frame);
 	}
 
 	Frame cycleDelaySynthesize() {
 
-		Integer frame = Util.cycleDelayFrame(logger, this, intervalSupport, cummulativeFrames.size(), ticks);
+		Integer frame = Util.cycleDelayFrame(logger, this, intervalSupport, frames, ticks);
 
-		Integer nextFrame = Util.cycleDelayFrame(logger, this, intervalSupport, cummulativeFrames.size(), ticks + 1);
+		Integer nextFrame = Util.cycleDelayFrame(logger, this, intervalSupport, frames, ticks + 1);
 
 		if (nextFrame != null && nextFrame == -1) {
 			stage(Stage.CYCLE);
 			this.frames = frames();
 		}
 
-		return frame != null ? randomSynthesis(frame) : null;
+		return synthesize(frame);
 	}
 
 	Frame finalDelaySynthesize() {
 
-		Integer frame = Util.finalDelayFrame(logger, this, intervalSupport, cummulativeFrames.size(), ticks);
+		Integer frame = Util.finalDelayFrame(logger, this, intervalSupport, frames, ticks);
 
-		Integer nextFrame = Util.finalDelayFrame(logger, this, intervalSupport, cummulativeFrames.size(), ticks + 1);
+		Integer nextFrame = Util.finalDelayFrame(logger, this, intervalSupport, frames, ticks + 1);
 
 		if (nextFrame != null && nextFrame == -1) {
 			stage(Stage.COMPLETE);
 		}
 
-		return frame != null ? randomSynthesis(frame) : null;
+		return synthesize(frame);
+
+	}
+
+	Frame synthesize(Integer frame) {
+
+		if (frame == null) {
+			return null;
+		}
+
+		return shuffled() ? randomSynthesis(random(frame, frames)) : randomSynthesis(frame);
+
+	}
+
+	int random(int frame, int modulus) {
+
+		/**
+		 * Some random math I found online, this worked during the tests. Idk why this
+		 * works, but it does.
+		 */
+		double random = 2920.f * Math.sin(seed * 21942.f + ticks * 171324.f + 8912.f)
+				* Math.cos(seed * 23157.f * ticks * 217832.f + 9758.f);
+
+		return (int) Math.abs(random % modulus);
 
 	}
 
