@@ -1,28 +1,23 @@
 package net.driftverse.dispatch.api;
 
-import java.util.Map;
 import java.util.function.BiConsumer;
 
+import org.bukkit.entity.Player;
+
 import net.driftverse.dispatch.api.enums.Mode;
+import net.driftverse.dispatch.api.schedule.ScheduleResult;
 
-public abstract class AbstractDispatcher<Reciver, Slot, Dispatch extends Comparable<Dispatch>>
-		implements Dispatcher<Reciver, Slot, Dispatch>, Runnable {
+public abstract class AbstractDispatcher<Slot, Dispatch extends Comparable<Dispatch>>
+		implements Dispatcher<Slot, Dispatch> {
 
 	@Override
-	public final void run() {
-		// TODO Auto-generated method stub
-
+	public final <S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player player, Mode mode, Slot slot,
+			S synthesizer, BiConsumer<F, Dispatch> adapter) {
+		return ScheduleResult.failed();
 	}
 
 	@Override
-	public final <S extends Synthesizer<S, F>, F> int schedule(Reciver player, Mode mode, Slot slot, S synthesizer,
-			BiConsumer<F, Dispatch> adapter) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public final void unschedule(int id) {
+	public final void unschedule(ScheduleResult result) {
 		// TODO Auto-generated method stub
 
 	}

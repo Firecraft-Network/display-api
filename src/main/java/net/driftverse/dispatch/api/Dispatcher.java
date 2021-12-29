@@ -3,28 +3,33 @@ package net.driftverse.dispatch.api;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import net.driftverse.dispatch.api.enums.Mode;
+import org.bukkit.entity.Player;
 
-public interface Dispatcher<Reciever, Slot, Dispatch extends Comparable<Dispatch>> {
+import net.driftverse.dispatch.api.enums.Mode;
+import net.driftverse.dispatch.api.schedule.ScheduleResult;
+
+public interface Dispatcher<Slot, Dispatch extends Comparable<Dispatch>> {
 
 	boolean supportsIntervals();
 
-	Dispatch dispatch(Slot slot);
+	Dispatch makeDispatch(Slot slot);
 
-	void create(Reciever reciver, List<Interpolator<Dispatch>> interpolators);
+	boolean shouldDispatch(List<Slot> otherSlots, Slot slot);
 
-	void update(Reciever reciver, List<Interpolator<Dispatch>> interpolators);
+	void create(Player reciver, List<Interpolator<Dispatch>> interpolators);
 
-	void destroy(Reciever reciver, List<Interpolator<Dispatch>> interpolators);
+	void update(Player reciver, List<Interpolator<Dispatch>> interpolators);
 
-	<S extends Synthesizer<S, F>, F> int schedule(Reciever reciever, Mode mode, Slot slot, S synthesizer,
+	void destroy(Player reciver, List<Interpolator<Dispatch>> interpolators);
+
+	<S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player reciever, Mode mode, Slot slot, S synthesizer,
 			BiConsumer<F, Dispatch> adapter);
 
-	default <S extends Synthesizer<S, F>, F> int schedule(Reciever reciever, Slot slot, S synthesizer,
+	default <S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player reciever, Slot slot, S synthesizer,
 			BiConsumer<F, Dispatch> adapter) {
 		return schedule(reciever, Mode.REPLACE, slot, synthesizer, adapter);
 	}
 
-	void unschedule(int id);
+	void unschedule(ScheduleResult result);
 
 }

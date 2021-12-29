@@ -7,7 +7,8 @@ import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
-import net.driftverse.dispatch.SynthesizerImpl.Stage;
+import net.driftverse.dispatch.impl.SynthesizerImpl;
+import net.driftverse.dispatch.impl.SynthesizerImpl.Stage;
 
 public class SynthesizerIntegrationTest {
 

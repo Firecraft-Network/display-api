@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import com.google.common.collect.Iterables;
 
 import net.driftverse.dispatch.api.Synthesizer;
+import net.driftverse.dispatch.impl.SynthesizerImpl;
 
 public class Util {
 

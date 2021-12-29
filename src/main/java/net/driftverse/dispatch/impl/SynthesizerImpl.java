@@ -1,13 +1,14 @@
-package net.driftverse.dispatch;
+package net.driftverse.dispatch.impl;
 
 import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
 
+import net.driftverse.dispatch.Util;
 import net.driftverse.dispatch.api.Synthesizer;
 
-final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> implements Synthesizer<S, Frame> {
+public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> implements Synthesizer<S, Frame> {
 
 	/**
 	 * I sincerely hope you don't fuck this up - Tyler Frydenlund
@@ -16,7 +17,7 @@ final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> implements S
 	 * 
 	 */
 
-	enum Stage {
+	public enum Stage {
 		DELAY, CUMMULATIVE, CYCLE, CYCLE_DELAY, FINAL_DELAY, COMPLETE;
 	}
 
@@ -167,7 +168,7 @@ final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> implements S
 		if (nextFrame != null && nextFrame == -1) {
 
 			++completedCycles;
-			
+
 			if (completedCycles == cycles) {
 				stage(Stage.FINAL_DELAY);
 			} else {

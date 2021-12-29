@@ -1,4 +1,4 @@
-package net.driftverse.dispatch;
+package net.driftverse.dispatch.impl;
 
 import java.util.HashMap;
 import java.util.List;
@@ -6,18 +6,20 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import net.driftverse.dispatch.Util;
 import net.driftverse.dispatch.api.Dispatcher;
 import net.driftverse.dispatch.api.Interpolator;
 import net.driftverse.dispatch.api.enums.Cycle;
 import net.driftverse.dispatch.api.enums.Timing;
 
-public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<Dispatch>> implements Interpolator<Dispatch> {
+public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<Dispatch>>
+		implements Interpolator<Dispatch> {
 
 	/* 60 Gives us a 3 second buffer room */
 	private final LinkedBlockingQueue<Dispatch> dispatches = new LinkedBlockingQueue<>(60);
 	private final float threshold = 0.25f;
 
-	private final Dispatcher<Reciver, Slot, Dispatch> dispatcher;
+	private final Dispatcher<Slot, Dispatch> dispatcher;
 	private final Slot slot;
 	private final Queue<List<SynthesizerImpl<?, ?>>> synthesizers;
 	private final int cycles;
@@ -29,7 +31,7 @@ public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<D
 
 	@SuppressWarnings("unchecked")
 	@SafeVarargs
-	public InterpolatorImpl(Dispatcher<Reciver, Slot, Dispatch> dispatcher, Slot slot, int cycles,
+	public InterpolatorImpl(Dispatcher<Slot, Dispatch> dispatcher, Slot slot, int cycles,
 			List<SynthesizerImpl<?, ?>>... synthesizers) {
 		this.dispatcher = dispatcher;
 		this.slot = slot;
@@ -39,7 +41,7 @@ public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<D
 		this.workingCopy = Util.copy((List<List<SynthesizerImpl<?, ?>>>) this.synthesizers);
 	}
 
-	public Dispatcher<Reciver, Slot, Dispatch> dispatcher() {
+	public Dispatcher<Slot, Dispatch> dispatcher() {
 		return dispatcher;
 	}
 
