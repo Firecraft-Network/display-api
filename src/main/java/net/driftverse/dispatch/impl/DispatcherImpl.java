@@ -13,7 +13,7 @@ import net.driftverse.dispatch.api.Synthesizer;
 import net.driftverse.dispatch.api.enums.Mode;
 import net.driftverse.dispatch.api.schedule.ScheduleResult;
 
-public class DispatcherImpl<Slot, Dispatch extends Comparable<Dispatch>> extends BukkitRunnable
+public final class DispatcherImpl<Slot, Dispatch extends Comparable<Dispatch>> extends BukkitRunnable
 		implements Dispatcher<Slot, Dispatch> {
 
 	private final Plugin plugin;
@@ -85,6 +85,18 @@ public class DispatcherImpl<Slot, Dispatch extends Comparable<Dispatch>> extends
 	public void unschedule(ScheduleResult result) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public int bufferLength() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public float bufferThreshold() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

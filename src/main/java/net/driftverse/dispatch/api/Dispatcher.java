@@ -12,6 +12,10 @@ public interface Dispatcher<Slot, Dispatch extends Comparable<Dispatch>> {
 
 	boolean supportsIntervals();
 
+	int bufferLength();
+
+	float bufferThreshold();
+
 	Dispatch makeDispatch(Slot slot);
 
 	boolean shouldDispatch(List<Slot> otherSlots, Slot slot);
