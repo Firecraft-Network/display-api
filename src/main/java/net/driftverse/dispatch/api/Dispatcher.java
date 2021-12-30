@@ -26,12 +26,22 @@ public interface Dispatcher<Slot, Dispatch extends Comparable<Dispatch>> {
 
 	void destroy(Player reciver, List<Interpolator<Dispatch>> interpolators);
 
-	<S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player reciever, Mode mode, Slot slot, S synthesizer,
-			BiConsumer<F, Dispatch> adapter);
+	<S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player player, Mode mode, Slot slot, int cycles,
+			S synthesizer, BiConsumer<F, Dispatch> adapter);
 
-	default <S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player reciever, Slot slot, S synthesizer,
+	default <S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player player, Slot slot, int cycles,
+			S synthesizer, BiConsumer<F, Dispatch> adapter) {
+		return schedule(player, Mode.REPLACE, slot, cycles, synthesizer, adapter);
+	}
+
+	default <S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player player, Mode mode, Slot slot, S synthesizer,
 			BiConsumer<F, Dispatch> adapter) {
-		return schedule(reciever, Mode.REPLACE, slot, synthesizer, adapter);
+		return schedule(player, mode, slot, 1, synthesizer, adapter);
+	}
+
+	default <S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player player, Slot slot, S synthesizer,
+			BiConsumer<F, Dispatch> adapter) {
+		return schedule(player, Mode.REPLACE, slot, 1, synthesizer, adapter);
 	}
 
 	void unschedule(ScheduleResult result);

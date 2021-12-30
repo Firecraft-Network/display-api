@@ -19,6 +19,10 @@ import net.driftverse.dispatch.impl.DispatcherImpl;
 
 public class DispatchSystem extends JavaPlugin {
 
+	/**
+	 * TODO: Move cycles from synthesizer to interpolator
+	 */
+
 	private static Plugin plugin;
 
 	private static final Multimap<Plugin, Dispatcher<?, ?>> dispatchers = ArrayListMultimap.create();

@@ -1,6 +1,7 @@
 package net.driftverse.dispatch;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,17 +23,17 @@ public class NumSyn extends AbstractSynthesizer<NumSyn, Integer> {
 	}
 
 	@Override
-	public int frames() {
+	public int frames(UUID interpolator) {
 		return frames;
 	}
 
 	@Override
 	public List<Integer> cumulativeSynthesis() {
-		return IntStream.range(0, frames()).boxed().collect(Collectors.toList());
+		return IntStream.range(0, frames(null)).boxed().collect(Collectors.toList());
 	}
 
 	@Override
-	public Integer randomSynthesis(int ticks) {
+	public Integer randomSynthesis(UUID interpolator, int ticks) {
 		return ticks;
 	}
 

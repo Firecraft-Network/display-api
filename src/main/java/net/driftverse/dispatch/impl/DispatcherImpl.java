@@ -74,13 +74,13 @@ public final class DispatcherImpl<Slot, Dispatch extends Comparable<Dispatch>> e
 
 	}
 
+
 	@Override
-	public <S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player reciever, Mode mode, Slot slot,
+	public <S extends Synthesizer<S, F>, F> ScheduleResult schedule(Player player, Mode mode, Slot slot, int cycles,
 			S synthesizer, BiConsumer<F, Dispatch> adapter) {
 		// TODO Auto-generated method stub
-		return ScheduleResult.failed();
+		return null;
 	}
-
 	@Override
 	public void unschedule(ScheduleResult result) {
 		// TODO Auto-generated method stub
@@ -98,5 +98,7 @@ public final class DispatcherImpl<Slot, Dispatch extends Comparable<Dispatch>> e
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+
 
 }

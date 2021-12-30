@@ -3,6 +3,7 @@ package net.driftverse.dispatch.api;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public interface Synthesizer<S extends Synthesizer<S, Frame>, Frame> extends Serializable {
 
@@ -24,7 +25,7 @@ public interface Synthesizer<S extends Synthesizer<S, Frame>, Frame> extends Ser
 	 * 
 	 * @since 1.0.0
 	 */
-	int frames();
+	int frames(UUID interpolator);
 
 	/**
 	 * In some cases, synthesizers can be known as "Cumulative". This means their
@@ -66,7 +67,7 @@ public interface Synthesizer<S extends Synthesizer<S, Frame>, Frame> extends Ser
 	 * @return The document at the number of ticks in time
 	 * @since 1.0.0
 	 */
-	Frame randomSynthesis(int frame);
+	Frame randomSynthesis(UUID interpolator, int frame);
 
 	S reverse(boolean reverse);
 

@@ -1,44 +1,38 @@
 package net.driftverse.dispatch.impl;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.driftverse.dispatch.Util;
 import net.driftverse.dispatch.api.Dispatcher;
 import net.driftverse.dispatch.api.Interpolator;
 import net.driftverse.dispatch.api.enums.Cycle;
+import net.driftverse.dispatch.api.enums.Mode;
 import net.driftverse.dispatch.api.enums.Timing;
 
 public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<Dispatch>>
 		implements Interpolator<Dispatch> {
 
-	/* 60 Gives us a 3 second buffer room */
-	private final LinkedBlockingQueue<Dispatch> dispatches = new LinkedBlockingQueue<>(60);
-	private final float threshold = 0.25f;
-
-	private final Dispatcher<Slot, Dispatch> dispatcher;
-	private final Slot slot;
-	private final Queue<List<SynthesizerImpl<?, ?>>> synthesizers;
-	private final int cycles;
-
-	private Queue<List<SynthesizerImpl<?, ?>>> workingCopy;
+	private final Queue<List<SynthesizerImpl<?, ?>>> synthesizers = new LinkedList<>();
 	private final Map<Timing, Integer> timings = new HashMap<>();
+	private final Map<SynthesizerImpl<?, ?>, Integer> remainingCycles = new HashMap<>();
+
+	private final LinkedBlockingQueue<Dispatch> dispatches;
+	private final DispatcherImpl<Slot, Dispatch> dispatcher;
+	private final Slot slot;
 	private Cycle cycle;
-	private int remainingCycles;
 
 	@SuppressWarnings("unchecked")
 	@SafeVarargs
-	public InterpolatorImpl(Dispatcher<Slot, Dispatch> dispatcher, Slot slot, int cycles,
+	public InterpolatorImpl(DispatcherImpl<Slot, Dispatch> dispatcher, Slot slot,
 			List<SynthesizerImpl<?, ?>>... synthesizers) {
 		this.dispatcher = dispatcher;
+		this.dispatches = new LinkedBlockingQueue<>(dispatcher.bufferLength());
 		this.slot = slot;
-		this.cycles = cycles;
 
-		this.synthesizers = Util.copy(List.of(synthesizers));
-		this.workingCopy = Util.copy((List<List<SynthesizerImpl<?, ?>>>) this.synthesizers);
 	}
 
 	public Dispatcher<Slot, Dispatch> dispatcher() {
@@ -65,19 +59,29 @@ public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<D
 
 	void updateTimings() {
 
-//		List<SynthesizerImpl<?, ?>> synthesizers = workingCopy.peek();
+		Map<Timing, Integer> timings = new HashMap<>();
+
+		List.of(Timing.values()).forEach(t -> timings.put(t, t.getDefaultValue()));
+
+		List<SynthesizerImpl<?, ?>> peek = synthesizers.peek();
+
+		if (peek != null) {
+
+			peek.forEach(s -> timings.compute(Timing.CYCLE_DELAY, (t, i) -> Math.max(s.interval(), i)));
+			peek.forEach(s -> timings.compute(Timing.CYCLES, (t, i) -> Math.max(s.cycles(), i)));
+			peek.forEach(s -> timings.compute(Timing.DELAY, (t, i) -> Math.max(s.delay(), i)));
+			peek.forEach(s -> timings.compute(Timing.FINAL_DELAY, (t, i) -> Math.max(s.finalDelay(), i)));
+			peek.forEach(s -> timings.compute(Timing.INTERVAL, (t, i) -> Math.max(s.interval(), i)));
+
+		}
+
+		this.timings.clear();
+		this.timings.putAll(timings);
+	}
+
+	public void addSynthesizers(Mode mode, int cycles, SynthesizerImpl<?, ?> synthesizer) {
 //
-//		if (synthesizers != null) {
-//
-//			BiFunction<Integer, Integer, Integer> function = (i1, i2) -> Math.max(i1, i2);
-//
-//			for (SynthesizerImpl<?, ?> synthesizer : synthesizers) {
-//
-//				Map<Timing, Integer> timings = synthesizer.timings();
-//
-//				timings.entrySet().forEach(e -> this.timings.merge(e.getKey(), e.getKey().getDefaultValue(), function));
-//			}
-//		}
+//		List.of(synthesizers).forEach(g -> this.synthesizers.offer(g));
 	}
 
 	@Override
@@ -105,14 +109,14 @@ public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<D
 	}
 
 	public float threshold() {
-		return threshold;
+		return dispatcher.bufferThreshold();
 	}
 
-	public int capacity() {
+	int capacity() {
 		return dispatches.size() + dispatches.remainingCapacity();
 	}
 
-	public boolean shouldBuffer() {
+	boolean shouldBuffer() {
 		return dispatches.isEmpty() || dispatches.size() / capacity() <= threshold();
 	}
 
