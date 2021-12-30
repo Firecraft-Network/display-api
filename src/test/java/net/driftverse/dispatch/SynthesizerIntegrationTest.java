@@ -33,8 +33,8 @@ public class SynthesizerIntegrationTest {
 		supportedLogger.setLevel(Level.OFF);
 	}
 
-	SynthesizerImpl<NumSyn, Integer> unsupported = new SynthesizerImpl<>(unsupportedLogger, false, syn);
-	SynthesizerImpl<NumSyn, Integer> supported = new SynthesizerImpl<>(supportedLogger, true, syn);
+	SynthesizerImpl<NumSyn, Integer> unsupported = new SynthesizerImpl<>(unsupportedLogger, false, interpolator, syn);
+	SynthesizerImpl<NumSyn, Integer> supported = new SynthesizerImpl<>(supportedLogger, true, interpolator, syn);
 
 	@Test
 	public void integrateDelay() {
@@ -43,7 +43,7 @@ public class SynthesizerIntegrationTest {
 		Assert.assertEquals("UnSupported not in correct stage", Stage.DELAY, unsupported.stage());
 
 		IntStream.range(0, delay).forEach(i -> Assert.assertEquals("Excpected  frame for unsupported intervals", 0,
-				unsupported.synthesize(interpolator).intValue()));
+				unsupported.synthesize().intValue()));
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CUMMULATIVE, unsupported.stage());
 
@@ -51,8 +51,8 @@ public class SynthesizerIntegrationTest {
 
 		Assert.assertEquals("Supported not in correct stage", Stage.DELAY, supported.stage());
 
-		IntStream.range(0, delay).forEach(i -> Assert.assertEquals("Excpected null frame supported intervals", null,
-				supported.synthesize(interpolator)));
+		IntStream.range(0, delay).forEach(
+				i -> Assert.assertEquals("Excpected null frame supported intervals", null, supported.synthesize()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CUMMULATIVE, supported.stage());
 
@@ -66,7 +66,7 @@ public class SynthesizerIntegrationTest {
 
 		IntStream.range(0, frames * interval)
 				.forEach(i -> Assert.assertEquals("Excpected  frame for unsupported intervals", i / interval,
-						unsupported.synthesize(interpolator).intValue()));
+						unsupported.synthesize().intValue()));
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE, unsupported.stage());
 
@@ -76,7 +76,7 @@ public class SynthesizerIntegrationTest {
 
 		IntStream.range(0, frames * interval)
 				.forEach(i -> Assert.assertEquals("Excpected frame with supported intervals",
-						i % interval == 0 ? i / interval : null, supported.synthesize(interpolator)));
+						i % interval == 0 ? i / interval : null, supported.synthesize()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE, supported.stage());
 	}
@@ -91,7 +91,7 @@ public class SynthesizerIntegrationTest {
 
 		IntStream.range(0, frames * interval)
 				.forEach(i -> Assert.assertEquals("Excpected frame for unsupported intervals", i / interval,
-						unsupported.synthesize(interpolator).intValue()));
+						unsupported.synthesize().intValue()));
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE_DELAY, unsupported.stage());
 
@@ -101,7 +101,7 @@ public class SynthesizerIntegrationTest {
 
 		IntStream.range(0, frames * interval)
 				.forEach(i -> Assert.assertEquals("Excpected frame with supported intervals",
-						i % interval == 0 ? i / interval : null, supported.synthesize(interpolator)));
+						i % interval == 0 ? i / interval : null, supported.synthesize()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE_DELAY, supported.stage());
 
@@ -113,7 +113,7 @@ public class SynthesizerIntegrationTest {
 
 		IntStream.range(0, frames * interval)
 				.forEach(i -> Assert.assertEquals("Excpected frame for unsupported intervals", i / interval,
-						unsupported.synthesize(interpolator).intValue()));
+						unsupported.synthesize().intValue()));
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.FINAL_DELAY, unsupported.stage());
 
@@ -123,7 +123,7 @@ public class SynthesizerIntegrationTest {
 
 		IntStream.range(0, frames * interval)
 				.forEach(i -> Assert.assertEquals("Excpected frame with supported intervals",
-						i % interval == 0 ? i / interval : null, supported.synthesize(interpolator)));
+						i % interval == 0 ? i / interval : null, supported.synthesize()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.FINAL_DELAY, supported.stage());
 	}
@@ -135,7 +135,7 @@ public class SynthesizerIntegrationTest {
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE_DELAY, unsupported.stage());
 
 		IntStream.range(0, cycleDelay).forEach(i -> Assert.assertEquals("Excpected frame for unsupported intervals",
-				frames - 1, unsupported.synthesize(interpolator).intValue()));
+				frames - 1, unsupported.synthesize().intValue()));
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE, unsupported.stage());
 
@@ -143,8 +143,8 @@ public class SynthesizerIntegrationTest {
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE_DELAY, supported.stage());
 
-		IntStream.range(0, cycleDelay).forEach(i -> Assert.assertEquals("Excpected frame with supported intervals",
-				null, supported.synthesize(interpolator)));
+		IntStream.range(0, cycleDelay).forEach(
+				i -> Assert.assertEquals("Excpected frame with supported intervals", null, supported.synthesize()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE, supported.stage());
 	}
@@ -156,7 +156,7 @@ public class SynthesizerIntegrationTest {
 		Assert.assertEquals("UnSupported not in correct stage", Stage.FINAL_DELAY, unsupported.stage());
 
 		IntStream.range(0, finalDelay).forEach(i -> Assert.assertEquals("Excpected frame for unsupported intervals",
-				frames - 1, unsupported.synthesize(interpolator).intValue()));
+				frames - 1, unsupported.synthesize().intValue()));
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.COMPLETE, unsupported.stage());
 
@@ -164,8 +164,8 @@ public class SynthesizerIntegrationTest {
 
 		Assert.assertEquals("Supported not in correct stage", Stage.FINAL_DELAY, supported.stage());
 
-		IntStream.range(0, finalDelay).forEach(i -> Assert.assertEquals("Excpected frame with supported intervals",
-				null, supported.synthesize(interpolator)));
+		IntStream.range(0, finalDelay).forEach(
+				i -> Assert.assertEquals("Excpected frame with supported intervals", null, supported.synthesize()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.COMPLETE, supported.stage());
 	}

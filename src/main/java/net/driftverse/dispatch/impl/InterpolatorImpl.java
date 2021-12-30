@@ -79,7 +79,7 @@ public final class InterpolatorImpl<Reciver, Slot, Dispatch extends Comparable<D
 		this.timings.putAll(timings);
 	}
 
-	public void addSynthesizers(Mode mode, int cycles, SynthesizerImpl<?, ?> synthesizer) {
+	public void addSynthesizers(Mode mode, int cycles, Synthesizer<?, ?> synthesizer) {
 //
 //		List.of(synthesizers).forEach(g -> this.synthesizers.offer(g));
 	}

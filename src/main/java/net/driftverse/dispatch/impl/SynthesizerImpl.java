@@ -1,8 +1,6 @@
 package net.driftverse.dispatch.impl;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -28,11 +26,11 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 
 	private final int seed = new Random().nextInt();
 	private final long sync = System.currentTimeMillis();
-	private final Map<UUID, Integer> frames = new HashMap<>();
 
 	private final Logger logger;
 	private final Synthesizer<S, Frame> implemented;
 	private final boolean intervalSupport;
+	private final UUID interpolator;
 
 	private final Class<Frame> frame;
 	private final int delay, interval, cycles, cycleDelay, finalDelay;
@@ -41,15 +39,16 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 	private final List<Frame> cummulativeFrames;
 
 	private Stage stage = Stage.DELAY;
-	private int completedCycles, ticks = -1;
+	private int completedCycles, frames, ticks = -1;
 
-	public SynthesizerImpl(Logger logger, boolean intervalSupport, Synthesizer<S, Frame> synthesizer) {
+	public SynthesizerImpl(Logger logger, boolean intervalSupport, UUID interpolator,
+			Synthesizer<S, Frame> synthesizer) {
 
 		this.logger = logger;
 
 		this.intervalSupport = intervalSupport;
 		logger.trace("Inverval support = " + intervalSupport);
-
+		this.interpolator = interpolator;
 		this.implemented = synthesizer;
 
 		this.frame = synthesizer.frame();
@@ -89,6 +88,8 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 
 		logger.trace("Current Frames = " + frames);
 
+		this.frames = frames(interpolator);
+
 	}
 
 	public SynthesizerImpl<S, Frame> self() {
@@ -107,22 +108,22 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 		return seed;
 	}
 
-	public Frame synthesize(UUID interpolator) {
+	public Frame synthesize() {
 		++ticks;
 
 		switch (stage) {
 		case COMPLETE:
 			return null;
 		case CUMMULATIVE:
-			return cummulativeSynthesize(interpolator);
+			return cummulativeSynthesize();
 		case CYCLE:
-			return cycleSynthesize(interpolator);
+			return cycleSynthesize();
 		case CYCLE_DELAY:
-			return cycleDelaySynthesize(interpolator);
+			return cycleDelaySynthesize();
 		case DELAY:
-			return delaySynthesize(interpolator);
+			return delaySynthesize();
 		case FINAL_DELAY:
-			return finalDelaySynthesize(interpolator);
+			return finalDelaySynthesize();
 		default:
 			String msg = "Synthesizer Impl has broken due to an unknown error, stage = " + stage;
 			logger.error(msg);
@@ -131,14 +132,10 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 
 	}
 
-	int getFrames(UUID interpolator) {
-		return frames.computeIfAbsent(interpolator, i -> frames(interpolator));
-	}
+	Frame delaySynthesize() {
+		Integer frame = Util.delayFrame(logger, this, intervalSupport, frames, ticks);
 
-	Frame delaySynthesize(UUID interpolator) {
-		Integer frame = Util.delayFrame(logger, this, intervalSupport, getFrames(interpolator), ticks);
-
-		Integer nextFrame = Util.delayFrame(logger, this, intervalSupport, getFrames(interpolator), ticks + 1);
+		Integer nextFrame = Util.delayFrame(logger, this, intervalSupport, frames, ticks + 1);
 
 		logger.trace("Delay next frame = " + nextFrame);
 
@@ -152,25 +149,25 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 		return f;
 	}
 
-	Frame cummulativeSynthesize(UUID interpolator) {
+	Frame cummulativeSynthesize() {
 		Integer frame = Util.cummulativeFrame(this, intervalSupport, cummulativeFrames.size(), ticks);
 
 		Integer nextFrame = Util.cummulativeFrame(this, intervalSupport, cummulativeFrames.size(), ticks + 1);
 
 		if (nextFrame != null && nextFrame == -1) {
 			stage(Stage.CYCLE);
-			this.frames.put(interpolator, frames(interpolator));
+			this.frames = frames(interpolator);
 		}
 
 		return frame != null ? cummulativeFrames.get(shuffled() ? random(frame, cummulativeFrames.size()) : frame)
 				: null;
 	}
 
-	Frame cycleSynthesize(UUID interpolator) {
+	Frame cycleSynthesize() {
 
-		Integer frame = Util.cycleFrame(this, intervalSupport, getFrames(interpolator), ticks);
+		Integer frame = Util.cycleFrame(this, intervalSupport, frames, ticks);
 
-		Integer nextFrame = Util.cycleFrame(this, intervalSupport, getFrames(interpolator), ticks + 1);
+		Integer nextFrame = Util.cycleFrame(this, intervalSupport, frames, ticks + 1);
 
 		if (nextFrame != null && nextFrame == -1) {
 
@@ -186,25 +183,25 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 		return synthesize(interpolator, frame);
 	}
 
-	Frame cycleDelaySynthesize(UUID interpolator) {
+	Frame cycleDelaySynthesize() {
 
-		Integer frame = Util.cycleDelayFrame(logger, this, intervalSupport, getFrames(interpolator), ticks);
+		Integer frame = Util.cycleDelayFrame(logger, this, intervalSupport, frames, ticks);
 
-		Integer nextFrame = Util.cycleDelayFrame(logger, this, intervalSupport, getFrames(interpolator), ticks + 1);
+		Integer nextFrame = Util.cycleDelayFrame(logger, this, intervalSupport, frames, ticks + 1);
 
 		if (nextFrame != null && nextFrame == -1) {
 			stage(Stage.CYCLE);
-			this.frames.put(interpolator, frames(interpolator));
+			this.frames = frames(interpolator);
 		}
 
 		return synthesize(interpolator, frame);
 	}
 
-	Frame finalDelaySynthesize(UUID interpolator) {
+	Frame finalDelaySynthesize() {
 
-		Integer frame = Util.finalDelayFrame(logger, this, intervalSupport, getFrames(interpolator), ticks);
+		Integer frame = Util.finalDelayFrame(logger, this, intervalSupport, frames, ticks);
 
-		Integer nextFrame = Util.finalDelayFrame(logger, this, intervalSupport, getFrames(interpolator), ticks + 1);
+		Integer nextFrame = Util.finalDelayFrame(logger, this, intervalSupport, frames, ticks + 1);
 
 		if (nextFrame != null && nextFrame == -1) {
 			stage(Stage.COMPLETE);
@@ -220,8 +217,7 @@ public final class SynthesizerImpl<S extends Synthesizer<S, Frame>, Frame> imple
 			return null;
 		}
 
-		return shuffled() ? randomSynthesis(interpolator, random(frame, getFrames(interpolator)))
-				: randomSynthesis(interpolator, frame);
+		return shuffled() ? randomSynthesis(interpolator, random(frame, frames)) : randomSynthesis(interpolator, frame);
 
 	}
 
