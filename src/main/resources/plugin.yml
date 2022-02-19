@@ -1,0 +1,10 @@
+name: Hyleo-Animations
+prefix: Hyleo
+main: hyleo.animations.Hyleo
+version: ${project.version}
+api-version: 1.18
+authors:
+- Hypenage
+- Leoarcturus
+description: Easily display complex animations to players
+website: https://driftverse.com

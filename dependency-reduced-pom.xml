@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.driftverse</groupId>
-  <artifactId>dispatch-api</artifactId>
-  <name>Dispatch API</name>
+  <artifactId>hyleo-animations</artifactId>
+  <name>Hyleo Animations</name>
   <version>0.0.1-SNAPSHOT</version>
   <build>
     <resources>
@@ -40,7 +40,7 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
-          <finalName>${artifactId}</finalName>
+          <finalName>../server/plugins/{artifact-id}</finalName>
           <appendAssemblyId>false</appendAssemblyId>
         </configuration>
       </plugin>
@@ -59,11 +59,11 @@
           <relocations>
             <relocation>
               <pattern>com.google.common</pattern>
-              <shadedPattern>net.driftverse.dispatch.dependencies.com.google.common</shadedPattern>
+              <shadedPattern>hyleo.animations.dependencies.com.google.common</shadedPattern>
             </relocation>
             <relocation>
               <pattern>org.apache.commons.lang3</pattern>
-              <shadedPattern>net.driftverse.dispatch.dependencies.org.apache.commons.lang3</shadedPattern>
+              <shadedPattern>hyleo.animations.dependencies.org.apache.commons.lang3</shadedPattern>
             </relocation>
           </relocations>
           <filters>
@@ -87,6 +87,12 @@
       </plugin>
     </plugins>
   </build>
+  <repositories>
+    <repository>
+      <id>papermc</id>
+      <url>https://papermc.io/repo/repository/maven-public/</url>
+    </repository>
+  </repositories>
   <pluginRepositories>
     <pluginRepository>
       <id>maven-snapshots</id>
@@ -95,6 +101,12 @@
   </pluginRepositories>
   <dependencies>
     <dependency>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
+      <version>1.18.1-R0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.4</version>
@@ -102,7 +114,7 @@
     </dependency>
   </dependencies>
   <properties>
-    <java.version>16</java.version>
+    <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <paper-version>1.18.1-R0.1-SNAPSHOT</paper-version>
   </properties>

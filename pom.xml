@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.driftverse</groupId>
-	<artifactId>dispatch-api</artifactId>
+	<artifactId>hyleo-animations</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Dispatch API</name>
+	<name>Hyleo Animations</name>
 
 	<properties>
 		<java.version>17</java.version>
@@ -26,6 +26,12 @@
 	</pluginRepositories>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+			<version>1.18.22</version>
+		</dependency>
 		<!-- https://papermc.io/using-the-api -->
 		<dependency>
 			<groupId>io.papermc.paper</groupId>
@@ -101,12 +107,10 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
-					<finalName>${artifactId}</finalName>
+					<finalName>../server/plugins/{artifact-id}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 			</plugin>
-
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -115,11 +119,11 @@
 					<relocations>
 						<relocation>
 							<pattern>com.google.common</pattern>
-							<shadedPattern>net.driftverse.dispatch.dependencies.com.google.common</shadedPattern>
+							<shadedPattern>hyleo.animations.dependencies.com.google.common</shadedPattern>
 						</relocation>
 						<relocation>
 							<pattern>org.apache.commons.lang3</pattern>
-							<shadedPattern>net.driftverse.dispatch.dependencies.org.apache.commons.lang3</shadedPattern>
+							<shadedPattern>hyleo.animations.dependencies.org.apache.commons.lang3</shadedPattern>
 						</relocation>
 					</relocations>
 					<filters>

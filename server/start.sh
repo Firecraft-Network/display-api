@@ -1,0 +1,10 @@
+WORLD_DIRECTORY=./worlds/
+PORT=25565
+CONFIGS_DIRECTORY=./configs/
+SPIGOT_CONFIG=spigot.yml
+BUKKIT_CONFIG=bukkit.yml
+COMMANDS_CONFIG=commands.yml
+LEVEL_NAME=scurvy
+
+java -Xmx4096M -Xms4096M -Dcom.mojang.eula.agree=true -jar paper.jar --nogui -p $PORT -b $CONFIGS_DIRECTORY$BUKKIT_CONFIG --commands-settings $CONFIGS_DIRECTORY$COMMANDS_CONFIG -S $CONFIGS_DIRECTORY$SPIGOT_CONFIG -W $WORLD_DIRECTORY -w $LEVEL_NAME
+sleep 10 
