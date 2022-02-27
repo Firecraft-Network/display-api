@@ -16,11 +16,13 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor(staticName = "simple")
 @EqualsAndHashCode
 public class AnimationInfo {
-	
+
 	@Default
 	final boolean reversed = false;
 
 	@Default
 	final int delay = 0, interval = 2, cycleDelay = 0, finalDelay = 0, cycles = 0;
 
+	@Default
+	final int fadeIn = 0, fadeOut = 0;
 }

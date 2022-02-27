@@ -40,8 +40,6 @@ public class TextAnimator implements Animator<TextAnimation, Component> {
 
 		int cycleLength = animation.type().framesFunction().apply(colors, text.length());
 
-		System.out.println("COLORS:" + colors);
-
 		AnimationState state = new AnimationState(text.length(), text, cycleLength, colors, 0);
 
 		states.put(animation, state);

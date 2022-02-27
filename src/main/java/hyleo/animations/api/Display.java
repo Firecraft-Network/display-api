@@ -4,45 +4,96 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import hyleo.animations.api.Buffer.BufferBuilder;
-import hyleo.animations.api.Buffer.Stage;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.experimental.Accessors;
 
-public abstract class Display<Slot, Animation, Frame> extends BukkitRunnable {
+@Builder
+@Accessors(fluent = true)
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class Display<Slot, Animation, Frame> {
 
 	private final Map<Player, Map<Slot, Buffer<Slot, Animation, Frame>>> schedules = new HashMap<>();
+	private final Map<Player, Boolean> cleanedUp = new HashMap<>();
 
-	public abstract boolean intervalSupport();
+	@NonNull
+	private final Animator<Animation, Frame> animator;
 
-	public abstract Animator<Animation, Frame> animator();
+	@Default
+	private final boolean intervalSupport = false;
 
-	public abstract boolean shouldDisplay(Player player);
+	@Default
+	@NonNull
+	private final Consumer<Player> setup = (p) -> {
+	}, cleanup = (p) -> {
+	};
 
-	public abstract void create(Player player, List<Buffer<Slot, Animation, Frame>> buffers);
+	@Default
+	@NonNull
+	private final Function<Player, Boolean> condition = (p) -> true;
 
-	public abstract void update(Player player, List<Buffer<Slot, Animation, Frame>> buffers);
+	@Default
+	@NonNull
+	private final BiConsumer<Player, List<Buffer<Slot, Animation, Frame>>> create = (p, bs) -> bs
+			.forEach(b -> b.poll());
+	@Default
+	@NonNull
+	private final BiConsumer<Player, List<Buffer<Slot, Animation, Frame>>> update = (p, bs) -> bs
+			.forEach(b -> b.poll());
+	@Default
+	@NonNull
+	private final BiConsumer<Player, List<Buffer<Slot, Animation, Frame>>> destroy = (p, bs) -> bs
+			.forEach(b -> b.poll());
 
-	public abstract void destroy(Player player, List<Buffer<Slot, Animation, Frame>> buffers);
+	public void setup(Player player) {
 
-	private Animator<Animation, Frame> animator;
+		if (cleanedUp.containsKey(player)) {
+			return;
+		}
+		schedules.put(player, new HashMap<>());
+		cleanedUp.put(player, false);
+		setup.accept(player);
 
-	private Map<Slot, Buffer<Slot, Animation, Frame>> schedule(Player player) {
-		return schedules.computeIfAbsent(player, (p) -> new HashMap<>());
+	}
+
+	public void cleanup(Player player) {
+
+		schedules.remove(player);
+
+		if (!cleanedUp.containsKey(player)) {
+			return;
+		}
+		cleanedUp.put(player, true);
+		cleanup.accept(player);
+	}
+
+	public Map<Player, Map<Slot, Buffer<Slot, Animation, Frame>>> schedules() {
+		return schedules;
 	}
 
 	@SafeVarargs
 	@NonNull
 	public final void schedule(Player player, Slot slot, AnimationInfo info, Animation... animations) {
-		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedule(player);
+
+		setup(player);
+		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedules.get(player);
+
+		if (schedule == null) {
+			// TODO: Throw exception
+		}
 
 		BufferBuilder<Slot, Animation, Frame> builder = Buffer.builder();
-
-		animator = animator == null ? animator() : animator;
 
 		builder.slot(slot);
 		builder.animator(animator);
@@ -55,62 +106,12 @@ public abstract class Display<Slot, Animation, Frame> extends BukkitRunnable {
 
 	}
 
-	public final void run() {
-
-		for (Entry<Player, Map<Slot, Buffer<Slot, Animation, Frame>>> entry : schedules.entrySet()) {
-
-			Player player = entry.getKey();
-
-			if (!shouldDisplay(player)) {
-				continue;
-			}
-
-			Map<Slot, Buffer<Slot, Animation, Frame>> schedule = entry.getValue();
-
-			schedule.values().removeIf(b -> b.stage() == Stage.COMPLETE);
-
-			List<Buffer<Slot, Animation, Frame>> create = new ArrayList<>();
-			List<Buffer<Slot, Animation, Frame>> update = new ArrayList<>();
-			List<Buffer<Slot, Animation, Frame>> destroy = new ArrayList<>();
-
-			for (Buffer<Slot, Animation, Frame> buffer : schedule.values()) {
-
-				if (buffer.stage() == Stage.CREATE) {
-					create.add(buffer);
-				} else if (buffer.stage() == Stage.DESTROY) {
-					destroy.add(buffer);
-				} else {
-					update.add(buffer);
-				}
-			}
-
-			if (!create.isEmpty()) {
-				create(player, new ArrayList<>(create));// Prevent Accidental Tampering
-			}
-			// Create and Updates should happen on the same tick but create first then
-			// update
-			for (Buffer<Slot, Animation, Frame> buffer : create) {
-				if (buffer.stage() != Stage.CREATE || buffer.stage() != Stage.DESTROY
-						|| buffer.stage() != Stage.COMPLETE) {
-					update.add(buffer);
-				}
-			}
-
-			if (!destroy.isEmpty()) {
-				destroy(player, destroy); // Who cares if they tamper with it, we dont need it any more
-			}
-
-			if (!update.isEmpty()) {
-				update(player, update); // Who cares if they tamper with it, we dont need it any more
-			}
-
-			schedule.values().removeIf(b -> b.stage() == Stage.COMPLETE);
-		}
-
-	}
-
 	public final void unschedule(Player player, List<Slot> slots) {
-		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedule(player);
+		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedules.get(player);
+
+		if (schedule == null) {
+			// TODO: Throw exception
+		}
 
 		List<Buffer<Slot, Animation, Frame>> toDestroy = new ArrayList<>();
 
@@ -122,9 +123,10 @@ public abstract class Display<Slot, Animation, Frame> extends BukkitRunnable {
 	}
 
 	public final void empty(Player player) {
-		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedule(player);
+		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedules.get(player);
 
 		if (player.isOnline()) {
+
 			unschedule(player, new ArrayList<>(schedule.keySet()));
 		} else {
 			schedules.remove(player);

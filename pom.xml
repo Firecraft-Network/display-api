@@ -16,6 +16,10 @@
 			<id>papermc</id>
 			<url>https://papermc.io/repo/repository/maven-public/</url>
 		</repository>
+		<repository>
+			<id>placeholderapi</id>
+			<url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -37,6 +41,12 @@
 			<groupId>io.papermc.paper</groupId>
 			<artifactId>paper-api</artifactId>
 			<version>${paper-version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>me.clip</groupId>
+			<artifactId>placeholderapi</artifactId>
+			<version>2.11.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
@@ -70,7 +80,7 @@
 
 
 	<build>
-		<finalName>${artifactId}</finalName>
+		<finalName>${project.artifactId}</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/resources/</directory>
@@ -107,7 +117,7 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
-					<finalName>../server/plugins/{artifact-id}</finalName>
+					<finalName>../server/plugins/${project.artifactId}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 			</plugin>

@@ -1,0 +1,4 @@
+target/
+**/logs/
+server/worlds/
+server/libraries/

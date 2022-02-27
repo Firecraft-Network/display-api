@@ -1,3 +1,5 @@
 /target/
+/server/config.yml
+/server/logs/
 /server/cache/
 /server/worlds/

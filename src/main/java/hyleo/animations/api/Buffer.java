@@ -7,10 +7,11 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.Range;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import hyleo.animations.Util;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -19,11 +20,8 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(fluent = true)
 @NonNull
+@AllArgsConstructor
 public final class Buffer<Slot, Animation, Frame> {
-
-	public enum Stage {
-		CREATE, DELAY, CYCLE, CYCLE_DELAY, FINAL_DELAY, DESTROY, COMPLETE;
-	}
 
 	private final boolean intervalSupport;
 	private final Slot slot;
@@ -79,20 +77,17 @@ public final class Buffer<Slot, Animation, Frame> {
 			}
 			return null;
 		case DELAY:
-			frames = delaySynthesize(Stage.CYCLE, false,
-					(a, t) -> Util.delayFrame(logger, info, intervalSupport, frames(a), t));
+			frames = delaySynthesize(Stage.CYCLE, false, (a, t) -> delayFrame(frames(a), t));
 			break;
 		case CYCLE:
 			frames = cycleSynthesize();
 			break;
 		case CYCLE_DELAY:
-			frames = delaySynthesize(Stage.CYCLE, true,
-					(a, t) -> Util.cycleDelayFrame(logger, info, intervalSupport, frames(a), t));
+			frames = delaySynthesize(Stage.CYCLE, true, (a, t) -> cycleDelayFrame(frames(a), t));
 			break;
 
 		case FINAL_DELAY:
-			frames = delaySynthesize(Stage.DESTROY, false,
-					(a, t) -> Util.finalDelayFrame(logger, info, intervalSupport, frames(a), t));
+			frames = delaySynthesize(Stage.DESTROY, false, (a, t) -> finalDelayFrame(frames(a), t));
 			break;
 		case DESTROY:
 			if (increment) {
@@ -155,8 +150,8 @@ public final class Buffer<Slot, Animation, Frame> {
 	List<Frame> cycleSynthesize() {
 		List<Frame> frames = new ArrayList<>();
 
-		Function<Animation, Integer> function = (a) -> Util.cycleFrame(info, intervalSupport, frames(a), ticks);
-		Function<Animation, Integer> functionNext = (a) -> Util.cycleFrame(info, intervalSupport, frames(a), ticks + 1);
+		Function<Animation, Integer> function = (a) -> cycleFrame(frames(a), ticks);
+		Function<Animation, Integer> functionNext = (a) -> cycleFrame(frames(a), ticks + 1);
 
 		Map<Animation, Integer> animationFrames = frames(function);
 		Map<Animation, Integer> animationNextFrames = frames(functionNext);
@@ -196,6 +191,119 @@ public final class Buffer<Slot, Animation, Frame> {
 		}
 
 		return frames;
+
+	}
+
+	/**
+	 * -1 means not in a delay, null means interval support is enabled and no frame
+	 * should be sent based on calculations
+	 * 
+	 * @return The frame
+	 */
+	Integer delayFrame(int frames, int ticks) {
+
+		if (info.delay() <= 0) {
+			logger.debug("result = -1, delay = 0");
+			return -1;
+		}
+
+		Integer frame = delayFrame(logger, info, intervalSupport, frames, ticks, info.delay());
+
+		if (frame != null && frame == -1) {
+			return -1;
+		}
+
+		if (intervalSupport) {
+			logger.debug("result = null, intervalSupport = true");
+			return null;
+		}
+
+		frame = frames - 1 - frame;
+
+		logger.debug("{result = " + frame + "}");
+
+		return frame;
+	}
+
+	Integer cummulativeFrame(int cummulativeFrames, int ticks) {
+
+		int end = info.interval() * cummulativeFrames;
+
+		if (cummulativeFrames <= 0 || info.interval() <= 0) {
+			return -1;
+		}
+
+		return frame(cummulativeFrames, ticks, end);
+	}
+
+	Integer cycleFrame(int frames, int ticks) {
+
+		int end = info.interval() * frames;
+
+		if (info.interval() <= 0) {
+			return -1;
+		}
+
+		return frame(frames, ticks, end);
+	}
+
+	Integer cycleDelayFrame(int frames, int ticks) {
+
+		if (info.cycleDelay() <= 0) {
+			return -1;
+		}
+
+		return delayFrame(logger, info, intervalSupport, frames, ticks, info.cycleDelay());
+	}
+
+	Integer finalDelayFrame(int frames, int ticks) {
+
+		if (info.finalDelay() <= 0) {
+			return -1;
+		}
+
+		return delayFrame(logger, info, intervalSupport, frames, ticks, info.finalDelay());
+	}
+
+	Integer frame(int frames, int ticks, int rangeEnd) {
+
+		int interval = info.interval();
+
+		Range<Integer> range = Range.between(0, rangeEnd - 1);
+
+		if (interval <= 0 || !range.contains(ticks)) {
+			return -1;
+		}
+
+		// On a frame that should not be sent
+		if (intervalSupport && ticks % interval != 0) {
+			return null;
+		}
+
+		int frame = (int) ticks / interval;
+
+		return info.reversed() ? frames - frame : frame;
+	}
+
+	Integer delayFrame(Logger logger, AnimationInfo info, boolean intervalSupport, int frames, int ticks,
+			int rangeEnd) {
+
+		Range<Integer> range = Range.between(0, rangeEnd - 1);
+
+		if (!range.contains(ticks)) {
+			logger.debug("delayFrame = -1, outOfRange = " + range);
+			return -1;
+		}
+
+		if (intervalSupport) {
+			return null;
+		}
+
+		int frame = info.reversed() ? 0 : (frames - 1);
+
+		logger.debug("delayFrame = " + frame + " reversed = " + info.reversed());
+
+		return frame;
 
 	}
 

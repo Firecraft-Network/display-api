@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import hyleo.animations.api.AnimationInfo;
 import hyleo.animations.api.Buffer;
-import hyleo.animations.api.Buffer.Stage;
+import hyleo.animations.api.Stage;
 import junit.framework.Assert;
 
 public class BufferIntegrationTest {
@@ -47,8 +47,8 @@ public class BufferIntegrationTest {
 
 		Assert.assertEquals("Supported not in correct stage", Stage.DELAY, supported.stage());
 
-		IntStream.range(0, delay).forEach(
-				i -> Assert.assertEquals("Excpected null frame supported intervals", null, supported.poll()));
+		IntStream.range(0, delay)
+				.forEach(i -> Assert.assertEquals("Excpected null frame supported intervals", null, supported.poll()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE, supported.stage());
 
@@ -144,8 +144,8 @@ public class BufferIntegrationTest {
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE_DELAY, supported.stage());
 
-		IntStream.range(0, cycleDelay).forEach(
-				i -> Assert.assertEquals("Excpected frame with supported intervals", null, supported.poll()));
+		IntStream.range(0, cycleDelay)
+				.forEach(i -> Assert.assertEquals("Excpected frame with supported intervals", null, supported.poll()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE, supported.stage());
 	}
@@ -169,8 +169,8 @@ public class BufferIntegrationTest {
 
 		Assert.assertEquals("Supported not in correct stage", Stage.FINAL_DELAY, supported.stage());
 
-		IntStream.range(0, finalDelay).forEach(
-				i -> Assert.assertEquals("Excpected frame with supported intervals", null, supported.poll()));
+		IntStream.range(0, finalDelay)
+				.forEach(i -> Assert.assertEquals("Excpected frame with supported intervals", null, supported.poll()));
 
 		Assert.assertEquals("Supported not in correct stage", Stage.DESTROY, supported.stage());
 	}

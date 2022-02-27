@@ -1,9 +1,7 @@
 package hyleo.animations.text;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,9 +34,6 @@ public class Palette {
 		TextColor color1 = colors().get(firstColor(depth, color));
 
 		TextColor color2 = colors().get(secondColor(colors.size(), depth, color));
-
-		System.out.println(new Color(color1.red(), color1.green(), color1.blue()) + " -- "
-				+ new Color(color2.red(), color2.green(), color2.blue()));
 
 		int red = color(color % depth, depth, color1, color2, (c) -> c.red());
 		int green = color(color % depth, depth, color1, color2, (c) -> c.green());
@@ -75,19 +70,4 @@ public class Palette {
 				+ color * distance(depth, color1, color2, function) * direction(color1, color2, function);
 	}
 
-	public static void main(String[] args) {
-
-		Palette palette = Palette.builder().depth(40)
-				.colors(List.of(TextColor.color(255, 0, 0), TextColor.color(0, 255, 0), TextColor.color(0, 0, 255)))
-				.build();
-
-		System.out.println("Should be 0");
-		IntStream.range(0, 40 * 3).forEach(i -> {
-			TextColor color = palette.color(i);
-			System.out.println("Frame: " + i + " " + new Color(color.red(), color.green(), color.blue()) + "\n");
-		});
-
-		System.out.println(
-				"Distance: " + distance(255, TextColor.color(0, 0, 0), TextColor.color(0, 255, 0), c -> c.blue()));
-	}
 }
