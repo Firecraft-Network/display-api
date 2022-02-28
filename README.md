@@ -1,4 +1,4 @@
-# Dispatch API
+# Display API
 A Spigot/Paper animation system for easily sending complex content to players.
 
 [Downloads]()
