@@ -17,6 +17,13 @@
       </resource>
     </resources>
     <finalName>${project.artifactId}</finalName>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -59,11 +66,11 @@
           <relocations>
             <relocation>
               <pattern>com.google.common</pattern>
-              <shadedPattern>hyleo.animations.dependencies.com.google.common</shadedPattern>
+              <shadedPattern>display.dependencies.com.google.common</shadedPattern>
             </relocation>
             <relocation>
               <pattern>org.apache.commons.lang3</pattern>
-              <shadedPattern>hyleo.animations.dependencies.org.apache.commons.lang3</shadedPattern>
+              <shadedPattern>display.dependencies.org.apache.commons.lang3</shadedPattern>
             </relocation>
           </relocations>
           <filters>
@@ -107,7 +114,7 @@
     <dependency>
       <groupId>io.papermc.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.18.1-R0.1-SNAPSHOT</version>
+      <version>1.18-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -119,13 +126,44 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.4</version>
+      <version>4.12</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.github.seeseemelk</groupId>
+      <artifactId>MockBukkit-v1.18</artifactId>
+      <version>1.15.5</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>spigot-api</artifactId>
+          <groupId>org.spigotmc</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>junit-jupiter</artifactId>
+          <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>hamcrest-library</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-io</artifactId>
+          <groupId>commons-io</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
   <properties>
     <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <paper-version>1.18.1-R0.1-SNAPSHOT</paper-version>
+    <powermock.version>4.3.1</powermock.version>
+    <paper-version>1.18-R0.1-SNAPSHOT</paper-version>
   </properties>
 </project>

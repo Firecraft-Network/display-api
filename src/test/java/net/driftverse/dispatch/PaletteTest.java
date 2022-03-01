@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import hyleo.animations.text.Palette;
-import junit.framework.Assert;
+import display.text.Palette;
 import net.kyori.adventure.text.format.TextColor;
 
 public class PaletteTest {

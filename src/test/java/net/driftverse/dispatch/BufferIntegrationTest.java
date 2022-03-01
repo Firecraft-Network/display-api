@@ -3,12 +3,12 @@ package net.driftverse.dispatch;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import hyleo.animations.api.AnimationInfo;
-import hyleo.animations.api.Buffer;
-import hyleo.animations.api.Stage;
-import junit.framework.Assert;
+import display.api.Buffer;
+import display.api.Stage;
+import display.api.Timings;
 
 public class BufferIntegrationTest {
 
@@ -19,13 +19,13 @@ public class BufferIntegrationTest {
 	int finalDelay = 5;
 	int cycles = 2;
 
-	AnimationInfo info = AnimationInfo.builder().interval(interval).cycles(cycles).delay(delay).cycleDelay(cycleDelay)
+	Timings timings = Timings.of().interval(interval).cycles(cycles).delay(delay).cycleDelay(cycleDelay)
 			.finalDelay(finalDelay).build();
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	Buffer<Integer, Integer, Integer> buffer(boolean intervalSupport) {
-		return (Buffer) Buffer.builder().slot(0).animator(new NumAnimator()).animations(List.of(frames)).info(info)
-				.coroperator((f) -> f.get(0)).intervalSupport(intervalSupport).build();
+		return (Buffer) Buffer.builder().slot(0).animator(new NumAnimator()).animations(List.of(frames))
+				.timings(timings).intervalSupport(intervalSupport).build();
 	}
 
 	@Test

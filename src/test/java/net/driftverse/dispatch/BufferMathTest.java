@@ -7,9 +7,9 @@
 //import org.apache.log4j.Logger;
 //import org.junit.Test;
 //
-//import hyleo.animations.Util;
-//import hyleo.animations.api.AnimationInfo;
-//import hyleo.animations.api.Buffer;
+//import display.Util;
+//import display.api.Timings;
+//import display.api.Buffer;
 //import junit.framework.Assert;
 //
 //public class BufferMathTest {
@@ -31,14 +31,14 @@
 //		logger.setLevel(Level.OFF);
 //	}
 //
-//	AnimationInfo info = AnimationInfo.builder().interval(interval).cycles(cycles).delay(delay).cycleDelay(cycleDelay)
+//	Timings info = Timings.builder().interval(interval).cycles(cycles).delay(delay).cycleDelay(cycleDelay)
 //			.finalDelay(finalDelay).build();
 //
-//	AnimationInfo infoReverse = AnimationInfo.builder().interval(interval).cycles(cycles).delay(delay)
+//	Timings infoReverse = Timings.builder().interval(interval).cycles(cycles).delay(delay)
 //			.cycleDelay(cycleDelay).finalDelay(finalDelay).reversed(true).build();
 //
 //	@SuppressWarnings({ "unchecked", "rawtypes" })
-//	Buffer<Integer, Integer, Integer> buffer(AnimationInfo info, Integer frames, boolean intervalSupport) {
+//	Buffer<Integer, Integer, Integer> buffer(Timings info, Integer frames, boolean intervalSupport) {
 //		return (Buffer) Buffer.builder().slot(0).animator(new NumAnimator()).animations(List.of(frames)).info(info)
 //				.coroperator((f) -> f.get(0)).intervalSupport(intervalSupport).build();
 //	}

@@ -3,14 +3,14 @@ package net.driftverse.dispatch;
 import java.util.List;
 import java.util.function.Function;
 
-import hyleo.animations.api.Animator;
+import display.api.Animator;
 
 public class NumAnimator implements Animator<Integer, Integer> {
 
 	private static final long serialVersionUID = -2323949806366244434L;
 
 	@Override
-	public Function<List<Integer>, Integer> coroperator() {
+	public Function<List<Integer>, Integer> concurency() {
 		return l -> l.get(0);
 	}
 

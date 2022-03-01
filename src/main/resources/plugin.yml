@@ -1,6 +1,6 @@
 name: Hyleo-Animations
 prefix: Hyleo
-main: hyleo.animations.Hyleo
+main: display.DisplayAPI
 version: ${project.version}
 api-version: 1.18
 authors:
