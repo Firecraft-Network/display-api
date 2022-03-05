@@ -25,9 +25,6 @@ jobs:
         cache: gradle
     - name: Build with Gradle
       run: ./gradlew build
-      
-    - name: print
-      run: ls target
         
     - name: Bump version tag
       id: tag_version
