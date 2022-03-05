@@ -3,7 +3,6 @@ package net.driftverse.dispatch.test;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
@@ -24,7 +23,4 @@ public class SidebarTest {
 		Assert.assertFalse("Failed to unmock Bukkit Server", MockBukkit.isMocked());
 	}
 
-	@Test
-	public void test() {
-	}
 }

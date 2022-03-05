@@ -13,18 +13,18 @@ import org.apache.log4j.Logger;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
 
-@Data
+@Getter
 @Accessors(fluent = true)
 @NonNull
 @AllArgsConstructor
 public final class Buffer<Slot, Animation, Frame> {
 	/**
 	 * TODO: Clean this the fuck up
-	 */	
+	 */
 	private final boolean intervalSupport;
 	private final Slot slot;
 
@@ -32,7 +32,6 @@ public final class Buffer<Slot, Animation, Frame> {
 	private final Timings timings;
 
 	private final List<Animation> animations;
-	private final Function<List<Frame>, Frame> coroperator;
 
 	private Stage stage = Stage.CREATE;
 	private int completedCycles, ticks = -1;
@@ -54,7 +53,10 @@ public final class Buffer<Slot, Animation, Frame> {
 		this.timings = timings;
 		this.animator = animator;
 		this.animations = animations;
-		this.coroperator = animator.concurency();
+	}
+
+	public boolean onIntervalGap() {
+		return peek() == null && ticks != -1 && !List.of(Stage.CREATE, Stage.DESTROY).contains(stage);
 	}
 
 	public Frame peek() {
@@ -73,44 +75,40 @@ public final class Buffer<Slot, Animation, Frame> {
 
 		switch (stage) {
 		case CREATE:
-			if (increment) {
-				stage(Stage.DELAY);
-			}
+			stage(increment, Stage.DELAY);
 			return null;
 		case DELAY:
-			frames = delaySynthesize(Stage.CYCLE, false, (a, t) -> delayFrame(frames(a), t));
+			frames = delaySynthesize(increment, Stage.CYCLE, false, (a, t) -> delayFrame(frames(a), t));
 			break;
 		case CYCLE:
-			frames = cycleSynthesize();
+			frames = cycleSynthesize(increment);
 			break;
 		case CYCLE_DELAY:
-			frames = delaySynthesize(Stage.CYCLE, true, (a, t) -> cycleDelayFrame(frames(a), t));
+			frames = delaySynthesize(increment, Stage.CYCLE, true, (a, t) -> cycleDelayFrame(frames(a), t));
 			break;
 
 		case FINAL_DELAY:
-			frames = delaySynthesize(Stage.DESTROY, false, (a, t) -> finalDelayFrame(frames(a), t));
+			frames = delaySynthesize(increment, Stage.DESTROY, false, (a, t) -> finalDelayFrame(frames(a), t));
 			break;
 		case DESTROY:
-			if (increment) {
-				stage(Stage.COMPLETE);
-			}
+			stage(increment, Stage.COMPLETE);
 			return null;
 		default:
 			throw new RuntimeException("Buffer has broken due to an unknown error, stage = " + stage);
 		}
 
-		if (frames == null) {
+		if (frames == null && increment) {
 			logger.debug("BUFFERING AGAIN BECAUSE THE FRAMES WAS NULL");
 			return buffer(increment);
 		}
-		if (!frames.isEmpty()) {
-			return coroperator.apply(frames);
+		if (frames != null && !frames.isEmpty()) {
+			return animator.combine(frames);
 		}
 
 		return null;
 	}
 
-	List<Frame> delaySynthesize(Stage nextStage, boolean updateFrames,
+	List<Frame> delaySynthesize(boolean increment, Stage nextStage, boolean updateFrames,
 			BiFunction<Animation, Integer, Integer> function) {
 
 		List<Frame> frames = new ArrayList<>();
@@ -125,7 +123,7 @@ public final class Buffer<Slot, Animation, Frame> {
 			}
 
 			if (nextFrame.equals(-1) || frame.equals(-1)) {
-				stage(nextStage);
+				stage(increment, nextStage);
 
 				if (updateFrames) {
 					updateFrames();
@@ -148,7 +146,7 @@ public final class Buffer<Slot, Animation, Frame> {
 
 	}
 
-	List<Frame> cycleSynthesize() {
+	List<Frame> cycleSynthesize(boolean increment) {
 		List<Frame> frames = new ArrayList<>();
 
 		Function<Animation, Integer> function = (a) -> cycleFrame(frames(a), ticks);
@@ -161,7 +159,7 @@ public final class Buffer<Slot, Animation, Frame> {
 
 		if (complete) {
 			logger.debug("Cycle length was 0");
-			stage(completedCycles == timings.cycles() ? Stage.FINAL_DELAY : Stage.CYCLE_DELAY);
+			stage(increment, completedCycles == timings.repeats() ? Stage.FINAL_DELAY : Stage.CYCLE_DELAY);
 			++completedCycles;
 			return null; // Signals to recalculate since there were no frames on the first iteration
 		}
@@ -188,7 +186,7 @@ public final class Buffer<Slot, Animation, Frame> {
 			++completedCycles;
 			logger.debug("All animations had a completed cycle");
 			logger.debug("completed cycles " + completedCycles);
-			stage(completedCycles == timings.cycles() ? Stage.FINAL_DELAY : Stage.CYCLE_DELAY);
+			stage(increment, completedCycles == timings.repeats() ? Stage.FINAL_DELAY : Stage.CYCLE_DELAY);
 		}
 
 		return frames;
@@ -250,11 +248,11 @@ public final class Buffer<Slot, Animation, Frame> {
 
 	Integer cycleDelayFrame(int frames, int ticks) {
 
-		if (timings.cycleDelay() <= 0) {
+		if (timings.repeatDelay() <= 0) {
 			return -1;
 		}
 
-		return delayFrame(logger, timings, intervalSupport, frames, ticks, timings.cycleDelay());
+		return delayFrame(logger, timings, intervalSupport, frames, ticks, timings.repeatDelay());
 	}
 
 	Integer finalDelayFrame(int frames, int ticks) {
@@ -307,10 +305,12 @@ public final class Buffer<Slot, Animation, Frame> {
 
 	}
 
-	public void stage(Stage stage) {
-		logger.debug("Changing stage from " + this.stage + " -> " + stage);
-		this.stage = stage;
-		this.ticks = -1;
+	public void stage(boolean increment, Stage stage) {
+		if (increment) {
+			logger.debug("Changing stage from " + this.stage + " -> " + stage);
+			this.stage = stage;
+			this.ticks = -1;
+		}
 	}
 
 	public int frames(Animation animation) {

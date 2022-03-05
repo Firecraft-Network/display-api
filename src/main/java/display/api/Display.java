@@ -1,22 +1,18 @@
 package display.api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import org.bukkit.entity.Player;
-
 import display.api.Buffer.BufferBuilder;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang.Validate;
+import org.bukkit.entity.Player;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Builder
 @Accessors(fluent = true)
@@ -25,7 +21,7 @@ import lombok.experimental.Accessors;
 public final class Display<Slot, Animation, Frame> {
 
 	private final Map<Player, Map<Slot, Buffer<Slot, Animation, Frame>>> schedules = new HashMap<>();
-	private final Map<Player, Boolean> cleanedUp = new HashMap<>();
+	private final List<Player> wasSetup = new ArrayList<>();
 
 	private final Animator<Animation, Frame> animator;
 
@@ -56,12 +52,12 @@ public final class Display<Slot, Animation, Frame> {
 
 	public void setup(Player player) {
 
-		if (cleanedUp.containsKey(player)) {
+		if (wasSetup.contains(player)) {
 			return;
 		}
 
 		schedules.put(player, new HashMap<>());
-		cleanedUp.put(player, false);
+		wasSetup.add(player);
 		setup.accept(player);
 
 	}
@@ -70,10 +66,11 @@ public final class Display<Slot, Animation, Frame> {
 
 		schedules.remove(player);
 
-		if (!cleanedUp.containsKey(player)) {
+		if (!wasSetup.contains(player)) {
 			return;
 		}
-		cleanedUp.put(player, true);
+
+		wasSetup.remove(player);
 		cleanup.accept(player);
 	}
 
@@ -82,20 +79,15 @@ public final class Display<Slot, Animation, Frame> {
 	}
 
 	@SafeVarargs
-	public final void schedule(Player player, Slot slot, Timings timings, List<Animation>... animations) {
-
-	}
-
-	@SafeVarargs
 	@NonNull
 	public final void schedule(Player player, Slot slot, Timings timings, Animation... animations) {
+		Validate.notNull(player, "Null player can not be used in displays");
+		Validate.notNull(slot, "Null slots can not be used in displays");
+		Validate.notNull(timings, "Null timings can not be used in displays");
+		Validate.noNullElements(List.of(animations), "Null animations can not be used in displays");
 
 		setup(player);
 		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedules.get(player);
-
-		if (schedule == null) {
-			// TODO: Throw exception
-		}
 
 		BufferBuilder<Slot, Animation, Frame> builder = Buffer.builder();
 
@@ -115,11 +107,11 @@ public final class Display<Slot, Animation, Frame> {
 	}
 
 	public void unschedule(Player player, Collection<Slot> slots) {
-		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedules.get(player);
 
-		if (schedule == null) {
-			// TODO: Throw exception
-		}
+		Validate.notNull(player, "Null player can not be used in displays");
+		Validate.noNullElements(slots, "Null slots can not be used in displays");
+
+		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedules.get(player);
 
 		List<Buffer<Slot, Animation, Frame>> toDestroy = new ArrayList<>();
 
@@ -127,7 +119,7 @@ public final class Display<Slot, Animation, Frame> {
 
 		toDestroy.removeIf(b -> b == null);
 
-		toDestroy.forEach(b -> b.stage(Stage.DESTROY));
+		toDestroy.forEach(b -> b.stage(true, Stage.DESTROY));
 	}
 
 	public final void empty(Player player) {

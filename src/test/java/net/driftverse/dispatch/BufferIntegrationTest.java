@@ -1,14 +1,13 @@
 package net.driftverse.dispatch;
 
-import java.util.List;
-import java.util.stream.IntStream;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import display.api.Buffer;
 import display.api.Stage;
 import display.api.Timings;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.stream.IntStream;
 
 public class BufferIntegrationTest {
 
@@ -19,7 +18,7 @@ public class BufferIntegrationTest {
 	int finalDelay = 5;
 	int cycles = 2;
 
-	Timings timings = Timings.of().interval(interval).cycles(cycles).delay(delay).cycleDelay(cycleDelay)
+	Timings timings = Timings.of().interval(interval).repeats(cycles).delay(delay).repeatDelay(cycleDelay)
 			.finalDelay(finalDelay).build();
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -34,7 +33,7 @@ public class BufferIntegrationTest {
 		Buffer<Integer, Integer, Integer> unsupported = buffer(false);
 		Buffer<Integer, Integer, Integer> supported = buffer(true);
 
-		unsupported.stage(Stage.DELAY);
+		unsupported.stage(true, Stage.DELAY);
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.DELAY, unsupported.stage());
 
@@ -43,7 +42,7 @@ public class BufferIntegrationTest {
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE, unsupported.stage());
 
-		supported.stage(Stage.DELAY);
+		supported.stage(true, Stage.DELAY);
 
 		Assert.assertEquals("Supported not in correct stage", Stage.DELAY, supported.stage());
 
@@ -56,7 +55,7 @@ public class BufferIntegrationTest {
 
 //	@Test
 //	public void integrateCummulative() {
-//		unsupported.stage(Stage.CUMMULATIVE);
+//		unsupported.stage(true,Stage.CUMMULATIVE);
 //
 //		Assert.assertEquals("UnSupported not in correct stage", Stage.CUMMULATIVE, unsupported.stage());
 //
@@ -66,7 +65,7 @@ public class BufferIntegrationTest {
 //
 //		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE, unsupported.stage());
 //
-//		supported.stage(Stage.CUMMULATIVE);
+//		supported.stage(true,Stage.CUMMULATIVE);
 //
 //		Assert.assertEquals("Supported not in correct stage", Stage.CUMMULATIVE, supported.stage());
 //
@@ -83,7 +82,7 @@ public class BufferIntegrationTest {
 		Buffer<Integer, Integer, Integer> supported = buffer(true);
 		// FIRST CYCLE
 
-		unsupported.stage(Stage.CYCLE);
+		unsupported.stage(true, Stage.CYCLE);
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE, unsupported.stage());
 
 		IntStream.range(0, frames * interval)
@@ -92,7 +91,7 @@ public class BufferIntegrationTest {
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE_DELAY, unsupported.stage());
 
-		supported.stage(Stage.CYCLE);
+		supported.stage(true, Stage.CYCLE);
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE, supported.stage());
 
@@ -104,7 +103,7 @@ public class BufferIntegrationTest {
 
 		// SECOND CYCLE
 
-		unsupported.stage(Stage.CYCLE);
+		unsupported.stage(true, Stage.CYCLE);
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE, unsupported.stage());
 
@@ -114,7 +113,7 @@ public class BufferIntegrationTest {
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.FINAL_DELAY, unsupported.stage());
 
-		supported.stage(Stage.CYCLE);
+		supported.stage(true, Stage.CYCLE);
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE, supported.stage());
 
@@ -131,7 +130,7 @@ public class BufferIntegrationTest {
 		Buffer<Integer, Integer, Integer> unsupported = buffer(false);
 		Buffer<Integer, Integer, Integer> supported = buffer(true);
 
-		unsupported.stage(Stage.CYCLE_DELAY);
+		unsupported.stage(true, Stage.CYCLE_DELAY);
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE_DELAY, unsupported.stage());
 
@@ -140,7 +139,7 @@ public class BufferIntegrationTest {
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.CYCLE, unsupported.stage());
 
-		supported.stage(Stage.CYCLE_DELAY);
+		supported.stage(true, Stage.CYCLE_DELAY);
 
 		Assert.assertEquals("Supported not in correct stage", Stage.CYCLE_DELAY, supported.stage());
 
@@ -156,7 +155,7 @@ public class BufferIntegrationTest {
 		Buffer<Integer, Integer, Integer> unsupported = buffer(false);
 		Buffer<Integer, Integer, Integer> supported = buffer(true);
 
-		unsupported.stage(Stage.FINAL_DELAY);
+		unsupported.stage(true, Stage.FINAL_DELAY);
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.FINAL_DELAY, unsupported.stage());
 
@@ -165,7 +164,7 @@ public class BufferIntegrationTest {
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.DESTROY, unsupported.stage());
 
-		supported.stage(Stage.FINAL_DELAY);
+		supported.stage(true, Stage.FINAL_DELAY);
 
 		Assert.assertEquals("Supported not in correct stage", Stage.FINAL_DELAY, supported.stage());
 
@@ -181,11 +180,11 @@ public class BufferIntegrationTest {
 		Buffer<Integer, Integer, Integer> unsupported = buffer(false);
 		Buffer<Integer, Integer, Integer> supported = buffer(true);
 
-		unsupported.stage(Stage.DESTROY);
+		unsupported.stage(true, Stage.DESTROY);
 
 		Assert.assertEquals("UnSupported not in correct stage", Stage.DESTROY, unsupported.stage());
 
-		supported.stage(Stage.DESTROY);
+		supported.stage(true, Stage.DESTROY);
 
 		Assert.assertEquals("Supported not in correct stage", Stage.DESTROY, supported.stage());
 	}

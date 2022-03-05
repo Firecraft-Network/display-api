@@ -1,0 +1,10 @@
+name: Display-API
+prefix: Display-API
+main: display.DisplayAPI
+version: 1.0.0-SNAPSHOT
+api-version: 1.18
+authors:
+- Hypenage
+- Leoarcturus
+description: Easily display complex animations to players
+website: https://display-api.driftverse.com

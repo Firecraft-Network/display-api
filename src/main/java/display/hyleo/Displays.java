@@ -1,19 +1,5 @@
 package display.hyleo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.IntStream;
-
-import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
-
 import display.DisplayAPI;
 import display.api.Buffer;
 import display.api.Stage;
@@ -23,7 +9,21 @@ import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent.Builder;
+import net.kyori.adventure.title.Title;
+import net.kyori.adventure.title.Title.Times;
 import net.md_5.bungee.api.ChatMessageType;
+import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+
+import java.time.Duration;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.IntStream;
 
 public class Displays {
 
@@ -87,7 +87,7 @@ public class Displays {
 
 	public static BiConsumer<Player, List<Buffer<Integer, TextAnimation, Component>>> tablistUpdate() {
 		return (p, buffers) -> {
-			Collections.sort(buffers, (buffer1, buffer2) -> Integer.compare(buffer1.slot(), buffer2.slot()));
+			buffers.sort(Comparator.comparingInt(Buffer::slot));
 
 			Collections.reverse(buffers);
 
@@ -141,17 +141,15 @@ public class Displays {
 	}
 
 	public static Consumer<Player> scoreboardSetup() {
-		return (p) -> {
-			ScoreboardUtil.showScoreboard(p);
-		};
+		return ScoreboardUtil::showScoreboard;
 	}
 
 	public static Consumer<Player> scoreboardCleanup() {
-		return (p) -> ScoreboardUtil.scoreboard(p);
+		return ScoreboardUtil::scoreboard;
 	}
 
 	public static Function<Player, Boolean> scoreboardCondition() {
-		return (p) -> ScoreboardUtil.viewingScoreboard(p);
+		return ScoreboardUtil::viewingScoreboard;
 	}
 
 	public static BiConsumer<Player, List<Buffer<Destination, TextAnimation, Component>>> scoreboardCreate() {
@@ -167,7 +165,7 @@ public class Displays {
 
 			// Sort sidebar buffers
 			if (!buffers.isEmpty()) {
-				Collections.sort(buffers, (b1, b2) -> !b1.slot().isScored() || !b2.slot().isScored() ? 0
+				buffers.sort((b1, b2) -> !b1.slot().isScored() || !b2.slot().isScored() ? 0
 						: Integer.compare(b1.slot().score(), b2.slot().score())); // Ensure Order
 			}
 
@@ -182,10 +180,10 @@ public class Displays {
 	public static BiConsumer<Player, List<Buffer<Destination, TextAnimation, Component>>> scoreboardUpdate() {
 		return (p, buffers) -> {
 
-			/**
-			 * We know we are viewing the correct scoreboard because of shouldDisplay().
-			 * This is quicker than calling DisplayAPI.scoreboard(p)
-			 **/
+			/*
+			  We know we are viewing the correct scoreboard because of shouldDisplay().
+			  This is quicker than calling DisplayAPI.scoreboard(p)
+			 */
 			Scoreboard scoreboard = p.getScoreboard();
 
 			for (Buffer<Destination, TextAnimation, Component> buffer : buffers) {
@@ -200,14 +198,16 @@ public class Displays {
 				Component text = buffer.poll();
 
 				if (tag == Tag.OBJECTIVE_NAME) {
-					scoreboard.getObjective(slot).displayName(text);
+					Objects.requireNonNull(scoreboard.getObjective(slot)).displayName(text);
 				}
 
 				if (tag == Tag.PREFIX) {
+					assert team != null;
 					team.prefix(text);
 				}
 
 				if (tag == Tag.SUFFIX) {
+					assert team != null;
 					team.suffix(text);
 				}
 
@@ -217,10 +217,10 @@ public class Displays {
 
 	public static BiConsumer<Player, List<Buffer<Destination, TextAnimation, Component>>> scoreboardDestroy() {
 		return (p, buffers) -> {
-			/**
-			 * We know we are viewing the correct scoreboard because of shouldDisplay().
-			 * This is quicker than calling DisplayAPI.scoreboard(p)
-			 **/
+			/*
+			  We know we are viewing the correct scoreboard because of shouldDisplay().
+			  This is quicker than calling DisplayAPI.scoreboard(p)
+			 */
 			Scoreboard scoreboard = p.getScoreboard();
 
 			for (Buffer<Destination, TextAnimation, Component> buffer : buffers) {
@@ -234,6 +234,8 @@ public class Displays {
 
 				String pName = ScoreboardUtil.playerName(destination, team);
 
+				assert pName != null;
+				assert objective != null;
 				objective.getScore(pName).resetScore();
 
 				// Slot can be null if referencing name tag destinations
@@ -241,6 +243,25 @@ public class Displays {
 					scoreboard.clearSlot(slot);
 				}
 			}
+		};
+	}
+
+	public static BiConsumer<Player, List<Buffer<Boolean, TextAnimation, Component>>> titleUpdate() {
+		return (p, buffers) -> {
+
+			Component title = Component.empty();
+			Component subtitle = Component.empty();
+
+			for (Buffer<Boolean, TextAnimation, Component> buffer : buffers) {
+				if (buffer.slot()) {
+					title = buffer.poll();
+				} else {
+					subtitle = buffer.poll();
+				}
+			}
+
+			p.showTitle(Title.title(title, subtitle, Times.of(Duration.ZERO, Duration.ofMillis(100), Duration.ZERO)));
+
 		};
 	}
 }

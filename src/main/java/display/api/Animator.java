@@ -1,7 +1,6 @@
 package display.api;
 
 import java.util.List;
-import java.util.function.Function;
 
 public interface Animator<Animation, Frame> {
 
@@ -14,13 +13,13 @@ public interface Animator<Animation, Frame> {
 	 * 
 	 * @return a function describing how to handle multiple frames
 	 */
-	Function<List<Frame>, Frame> concurency();
+	Frame combine(List<Frame> frames);
 
 	/**
 	 * This method is in place to support functions which may change the cycle
-	 * length. In an instance like text animations, the number frames to
-	 * complete 1 cycle is dependent on the length of the string for the text. If
-	 * this text changes, so would the cycle length.
+	 * length. In an instance like text animations, the number frames to complete 1
+	 * cycle is dependent on the length of the string for the text. If this text
+	 * changes, so would the cycle length.
 	 * <p>
 	 * Functions for options, are applied at the end of each cycle. The next cycle
 	 * length may change in duration depending on the new options. Options are

@@ -1,10 +1,10 @@
-name: Hyleo-Animations
-prefix: Hyleo
+name: Display-API
+prefix: Display-API
 main: display.DisplayAPI
-version: ${project.version}
+version: ${version}
 api-version: 1.18
 authors:
 - Hypenage
 - Leoarcturus
 description: Easily display complex animations to players
-website: https://hyleo.driftverse.com
+website: https://display-api.driftverse.com

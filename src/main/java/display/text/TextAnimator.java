@@ -3,7 +3,6 @@ package display.text;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import display.api.Animator;
@@ -18,15 +17,14 @@ public class TextAnimator implements Animator<TextAnimation, Component> {
 	/**
 	 * Creates on long line of text from all components
 	 */
+
 	@Override
-	public Function<List<Component>, Component> concurency() {
-		return (l) -> {
-			Builder text = Component.text();
+	public Component combine(List<Component> frames) {
+		Builder text = Component.text();
 
-			l.forEach(c -> text.append(c));
+		frames.forEach(c -> text.append(c));
 
-			return text.build();
-		};
+		return text.build();
 	}
 
 	/**

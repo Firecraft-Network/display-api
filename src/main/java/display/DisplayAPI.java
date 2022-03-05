@@ -1,5 +1,27 @@
 package display;
 
+import display.api.Buffer;
+import display.api.Display;
+import display.api.Stage;
+import display.hyleo.Destination;
+import display.hyleo.Displays;
+import display.text.TextAnimation;
+import display.text.TextAnimator;
+import examples.display.Sidebar;
+import examples.display.Title;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
+import net.md_5.bungee.api.ChatMessageType;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.JavaPluginLoader;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,28 +31,6 @@ import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.java.JavaPluginLoader;
-
-import display.api.Buffer;
-import display.api.Display;
-import display.api.Stage;
-import display.hyleo.Destination;
-import display.hyleo.Displays;
-import display.text.TextAnimation;
-import display.text.TextAnimator;
-import examples.display.Sidebar;
-import lombok.Getter;
-import lombok.experimental.Accessors;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.ChatMessageType;
 
 @Accessors(fluent = true)
 public class DisplayAPI extends JavaPlugin {
@@ -44,19 +44,17 @@ public class DisplayAPI extends JavaPlugin {
 	 * - Cummulative Animations
 	 * 
 	 * - Dispatch Loader Plugin (for non dev use)
+	 * 
+	 * - Restful API
 	 */
 	/**
 	 * TODO:
-	 * 
-	 * - Titles
 	 * 
 	 * - Write Tests Using Mockito
 	 * 
 	 * - Test Destroy Method
 	 * 
 	 * - Fix Interval Support
-	 * 
-	 * - Restful API
 	 *
 	 * - Handle Errors for Animators & Dispatchers
 	 * 
@@ -76,15 +74,19 @@ public class DisplayAPI extends JavaPlugin {
 
 	@Getter
 	private static final Display<Destination, TextAnimation, Component> scoreboard = Display
-			.<Destination, TextAnimation, Component>builder().animator(textAnimator).setup(Displays.scoreboardSetup())
-			.cleanup(Displays.scoreboardCleanup()).condition(Displays.scoreboardCondition())
-			.create(Displays.scoreboardCreate()).update(Displays.scoreboardUpdate())
-			.destroy(Displays.scoreboardDestroy()).build();
+			.<Destination, TextAnimation, Component>builder().animator(textAnimator).intervalSupport(true)
+			.setup(Displays.scoreboardSetup()).cleanup(Displays.scoreboardCleanup())
+			.condition(Displays.scoreboardCondition()).create(Displays.scoreboardCreate())
+			.update(Displays.scoreboardUpdate()).destroy(Displays.scoreboardDestroy()).build();
 
 	@Getter
 	private static final Display<Integer, TextAnimation, Component> tablist = Display
 			.<Integer, TextAnimation, Component>builder().animator(textAnimator).update(Displays.tablistUpdate())
 			.destroy(Displays.tablistDestroy()).build();
+
+	@Getter
+	private static final Display<Boolean, TextAnimation, Component> title = Display
+			.<Boolean, TextAnimation, Component>builder().animator(textAnimator).update(Displays.titleUpdate()).build();
 
 	public DisplayAPI() {
 		super();
@@ -100,23 +102,14 @@ public class DisplayAPI extends JavaPlugin {
 
 	public void onEnable() {
 
-		List<Display<?, ?, ?>> displays = List.of(bossbar, chat, scoreboard, tablist);
+		List<Display<?, ?, ?>> displays = List.of(bossbar, chat, scoreboard, tablist, title);
 
-		Bukkit.getScheduler().runTaskTimer(plugin, () -> displays.forEach(d -> {
-
-			try {
-				dispatch(d);
-			} catch (Exception e) {
-				e.printStackTrace();
-				displays.remove(d);
-
-			}
-
-		}), 0, 1);
+		Bukkit.getScheduler().runTaskTimer(plugin, () -> displays.forEach(d -> display(d)), 0, 1);
 
 		PluginManager pm = Bukkit.getPluginManager();
 
 		pm.registerEvents(new Sidebar(), plugin);
+		pm.registerEvents(new Title(), plugin);
 
 	}
 
@@ -124,7 +117,7 @@ public class DisplayAPI extends JavaPlugin {
 		return plugin;
 	}
 
-	public static <A, S, F> void dispatch(Display<A, S, F> display) {
+	public static <A, S, F> void display(Display<A, S, F> display) {
 
 		for (Entry<Player, Map<A, Buffer<A, S, F>>> entry : new ArrayList<>(display.schedules().entrySet())) {
 
@@ -158,6 +151,20 @@ public class DisplayAPI extends JavaPlugin {
 			create.removeIf(b -> List.of(Stage.CREATE, Stage.DESTROY, Stage.COMPLETE).contains(b.stage()));
 
 			update.addAll(create);
+
+			int p = update.size();
+			update.removeIf(b -> {
+
+				if (b.onIntervalGap()) {
+					b.poll();// increment
+					return true;
+				}
+
+				return false;
+
+			});
+
+			System.out.println("Before: " + p + " After: " + update.size() + " Schedule: " + schedule.size());
 
 			dispatchIfNotEmpty(player, destroy, display.destroy());
 
