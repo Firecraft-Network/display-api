@@ -40,7 +40,7 @@ jobs:
         body: ${{ steps.tag_version.outputs.changelog }}
 
     - name: Build with Gradle
-      run: ./gradlew build -Pname=${ github.event.repository.name } -Pversion=${{ steps.tag_version.outputs.new_tag }}
+      run: ./gradlew build -Pname=${{github.repository}} -Pversion=${{ steps.tag_version.outputs.new_tag }}
 
     - name: Upload Release API asset
       uses: actions/upload-release-asset@v1
@@ -48,6 +48,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/libs/${ github.event.repository.name }-${{ steps.tag_version.outputs.new_tag }}.jar
-        asset_name: display-api-${{ steps.tag_version.outputs.new_tag }}.jar
+        asset_path: ./build/libs/${{github.repository}}-${{ steps.tag_version.outputs.new_tag }}.jar
+        asset_name: ${{github.repository}}-${{ steps.tag_version.outputs.new_tag }}.jar
         asset_content_type: application/jar
