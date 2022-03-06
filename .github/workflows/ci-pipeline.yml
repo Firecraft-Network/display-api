@@ -24,13 +24,21 @@ jobs:
         distribution: 'adopt'
         cache: gradle
 
-
     - name: Bump version tag
       id: tag_version
       uses: mathieudutour/github-tag-action@v6.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-   
+
+    env:
+      name: display-api
+      version: ${{ steps.tag_version.outputs.new_tag }}
+      website: ${{github.server_url}}/${{github.repository}}
+      jar-name: $name-${{ steps.tag_version.outputs.new_tag }}
+
+    - name: Build with Gradle
+      run: ./gradlew build -Pname=$name -Pversion=$version -Pwebsite=$website
+
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       id: create_release
@@ -39,15 +47,12 @@ jobs:
         name: ${{ steps.tag_version.outputs.new_tag }}
         body: ${{ steps.tag_version.outputs.changelog }}
 
-    - name: Build with Gradle
-      run: ./gradlew build -Pname=${{github.repository}} -Pversion=${{ steps.tag_version.outputs.new_tag }}
-
     - name: Upload Release API asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/libs/${{github.repository}}-${{ steps.tag_version.outputs.new_tag }}.jar
-        asset_name: ${{github.repository}}-${{ steps.tag_version.outputs.new_tag }}.jar
+        asset_path: ./build/libs/$jar-name.jar
+        asset_name: $jar-name.jar
         asset_content_type: application/jar
