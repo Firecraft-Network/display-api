@@ -37,6 +37,15 @@ jobs:
           version: ${{ steps.tag_version.outputs.new_tag }}
           website: ${{github.server_url}}/${{github.repository}}
           jar-name: $name-${{ steps.tag_version.outputs.new_tag }}
+        outputs:
+          name:
+            value: $name
+          version:
+            value: $version
+          website:
+            value: $website
+          jar-name:
+            value: $jar-name
         run: ./gradlew build -Pname=$name -Pversion=$version -Pwebsite=$website
 
       - name: Create a GitHub release
