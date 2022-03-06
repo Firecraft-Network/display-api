@@ -9,9 +9,6 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  name: Display-API
-
 jobs:
   build-project:
 
@@ -38,7 +35,7 @@ jobs:
         env:
           version: ${{ steps.tag_version.outputs.new_tag }}
           website: ${{github.server_url}}/${{github.repository}}
-        run: ./gradlew build -Pname=$name -Pversion=$version -Pwebsite=$website
+        run: ./gradlew build -Pname=Display-API -Pversion=$version -Pwebsite=$website
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
@@ -54,7 +51,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/$name-${{ steps.tag_version.outputs.new_tag }}.jar
-          asset_name: $name-${{ steps.tag_version.outputs.new_tag }}.jar
+          asset_path: ./build/libs/Display-API-${{ steps.tag_version.outputs.new_tag }}.jar
+          asset_name: Display-API-${{ steps.tag_version.outputs.new_tag }}.jar
           asset_content_type: application/jar
 
