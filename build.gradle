@@ -3,7 +3,6 @@ plugins {
 }
 
 group = 'net.driftverse'
-version = ''
 
 repositories {
     mavenCentral()

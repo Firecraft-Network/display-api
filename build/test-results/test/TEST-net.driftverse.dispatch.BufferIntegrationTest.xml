@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="net.driftverse.dispatch.BufferIntegrationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2022-03-06T03:03:15" hostname="Mystery-Book.local" time="0.025">
+<testsuite name="net.driftverse.dispatch.BufferIntegrationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2022-03-06T03:13:56" hostname="Mystery-Book.local" time="0.022">
   <properties/>
-  <testcase name="integrateDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.02"/>
-  <testcase name="integrateFinalDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.0"/>
+  <testcase name="integrateDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.017"/>
+  <testcase name="integrateFinalDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.001"/>
   <testcase name="integrateCycleDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.001"/>
   <testcase name="integrateCompletion" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.0"/>
   <testcase name="integrateCycles" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.003"/>
