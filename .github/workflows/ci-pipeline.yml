@@ -55,7 +55,7 @@ jobs:
           jar-name: $name-${{ steps.tag_version.outputs.new_tag }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/${{ steps.build.outputs.jar-name }}.jar
-          asset_name: ${{ steps.build.outputs.jar-name }}.jar
+          asset_path: ./build/libs/$jar-name.jar
+          asset_name: $jar-name.jar
           asset_content_type: application/jar
 
