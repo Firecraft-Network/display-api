@@ -14,6 +14,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      name: display-api
+
     steps:
 
       - uses: actions/checkout@v2
@@ -33,19 +36,8 @@ jobs:
       - name: Build with Gradle
         id: build
         env:
-          name: display-api
           version: ${{ steps.tag_version.outputs.new_tag }}
           website: ${{github.server_url}}/${{github.repository}}
-          jar-name: $name-${{ steps.tag_version.outputs.new_tag }}
-        outputs:
-          name:
-            value: $name
-          version:
-            value: $version
-          website:
-            value: $website
-          jar-name:
-            value: $jar-name
         run: ./gradlew build -Pname=$name -Pversion=$version -Pwebsite=$website
 
       - name: Create a GitHub release
@@ -60,6 +52,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          jar-name: $name-${{ steps.tag_version.outputs.new_tag }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/libs/${{ steps.build.outputs.jar-name }}.jar
