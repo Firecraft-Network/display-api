@@ -10,7 +10,7 @@ on:
     branches: [ master ]
     
 jobs:
-  build-project:
+   build-project:
     runs-on: ubuntu-latest
     
     steps:
