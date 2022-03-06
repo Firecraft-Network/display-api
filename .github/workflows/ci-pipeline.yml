@@ -11,17 +11,18 @@ on:
     
 jobs:
   build-project:
+
     runs-on: ubuntu-latest
     
     steps:
-  
-    - uses: actions/checkout@v2
-    - name: Set up JDK
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-        distribution: 'adopt'
-        cache: gradle
+
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: gradle
 
     - name: Bump version tag
       id: tag_version
