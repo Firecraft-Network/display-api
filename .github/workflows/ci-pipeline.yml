@@ -9,13 +9,13 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  name: display-api
+
 jobs:
   build-project:
 
     runs-on: ubuntu-latest
-
-    env:
-      name: display-api
 
     steps:
 
@@ -52,10 +52,10 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          jar-name: $name-${{ steps.tag_version.outputs.new_tag }}
+          jarName: $name-${{ steps.tag_version.outputs.new_tag }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/$jar-name.jar
-          asset_name: $jar-name.jar
+          asset_path: ./build/libs/$jarName.jar
+          asset_name: $jarName.jar
           asset_content_type: application/jar
 
