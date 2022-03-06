@@ -49,7 +49,9 @@ public class DisplayAPI extends JavaPlugin {
 	 */
 	/**
 	 * TODO:
-	 * 
+	 *
+	 * - Split Displays into seperate plugin
+	 *
 	 * - Write Tests Using Mockito
 	 * 
 	 * - Test Destroy Method
