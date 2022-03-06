@@ -1,5 +1,15 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+}
+
+group = "net.driftverse"
+
+ext {
+    apiVersion = apiVersion
+    description = description
+    website = website
 }
 
 repositories {
@@ -14,12 +24,9 @@ repositories {
     }
 }
 
-ext {
-    apiVersion = apiVersion
-}
 
 dependencies {
-    compileOnly ("io.papermc.paper:paper-api:" + apiVersion + "-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:" + apiVersion + "-R0.1-SNAPSHOT")
     implementation("org.projectlombok:lombok:1.18.22")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("log4j:log4j:1.2.17")
@@ -38,6 +45,8 @@ configurations {
 def targetJavaVersion = 17
 
 java {
+    withJavadocJar();  // Generate Javadocs
+    withSourcesJar(); // Generate sources
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
@@ -59,4 +68,89 @@ processResources {
     filesMatching('plugin.yml') {
         expand props
     }
+}
+
+
+publish {
+    publications {
+
+        mavenJava(MavenPublication) {
+
+            groupId = group
+            artifactId = name
+            version = version
+
+            from components.java
+
+            pom {
+                name = name
+                description = description
+                url = website
+                inceptionYear = 2020
+
+                licenses {
+                    license {
+                        name = 'GPL-3.0 License'
+                        url = 'https://www.gnu.org/licenses/gpl-3.0.html'
+                        distribution = 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'tylerfrydenlund'
+                        name = 'Tyler Frydenlund'
+                    }
+                    developer {
+                        id = 'laytonromine'
+                        name = 'Layton Romine'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:gi:github.com/Driftverse/display-api.git'
+                    developerConnection = 'scm:git:shh:github.com/Driftverse/display-api.git'
+                    url = website
+                }
+
+            }
+
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'ossrh'
+            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            credentials {
+                username = project.properties["sonatypeUsername"]
+                password = project.properties["sonatypePassword"]
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+javadoc {
+    options.html5 = JavaVersion.current().isJava9Compatible()
+}
+
+extraArchive {
+    sources = true
+    tests = true
+    javadoc = true
+}
+
+nexus {
+    sign = true
+    repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+    snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+}
+
+nexusStaging {
+    packageGroup = group //optional if packageGroup == project.getGroup()
+    stagingProfileId = "yourStagingProfileId" //when not defined will be got from server using "packageGroup"
 }

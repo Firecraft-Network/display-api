@@ -30,12 +30,16 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build with Gradle
+      - name: Build and Publish to Sonatype Repo with Gradle
         id: build
         env:
-          version: ${{ steps.tag_version.outputs.new_tag }}
-          website: ${{github.server_url}}/${{github.repository}}
-        run: ./gradlew build -Pname=Display-API -Pversion=$version -Pwebsite=$website
+          ORG_GRADLE_PROJECT_version: ${{ steps.tag_version.outputs.new_tag }}
+          ORG_GRADLE_PROJECT_website: ${{github.server_url}}/${{github.repository}}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_SECRET }}
+        run: ./gradlew build publish
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1

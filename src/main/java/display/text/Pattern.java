@@ -1,5 +1,6 @@
 package display.text;
 
+import java.util.List;
 import java.util.function.BiFunction;
 
 import net.kyori.adventure.text.Component;
@@ -12,6 +13,10 @@ public interface Pattern {
 	BiFunction<Integer, Integer, Integer> frames();
 
 	BiFunction<TextAnimation, AnimationState, TextComponent> text();
+
+	default TextComponent render(TextAnimation animation, AnimationState state) {
+		return text().apply(animation, state);
+	}
 
 	public static Pattern build() {
 		return create((c, l) -> c * (l + 1), (a, s) -> {
