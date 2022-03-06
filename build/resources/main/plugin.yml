@@ -1,7 +1,7 @@
 name: Display-API
 prefix: Display-API
 main: display.DisplayAPI
-version: 1.0.0-SNAPSHOT
+version: 
 api-version: 1.18
 authors:
 - Hypenage

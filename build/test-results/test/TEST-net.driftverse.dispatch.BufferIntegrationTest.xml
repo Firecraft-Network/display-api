@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="net.driftverse.dispatch.BufferIntegrationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2022-03-05T07:49:07" hostname="Mystery-Book.local" time="0.029">
+<testsuite name="net.driftverse.dispatch.BufferIntegrationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2022-03-06T03:03:15" hostname="Mystery-Book.local" time="0.025">
   <properties/>
-  <testcase name="integrateDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.021"/>
+  <testcase name="integrateDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.02"/>
   <testcase name="integrateFinalDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.0"/>
   <testcase name="integrateCycleDelay" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.001"/>
   <testcase name="integrateCompletion" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.0"/>
-  <testcase name="integrateCycles" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.004"/>
+  <testcase name="integrateCycles" classname="net.driftverse.dispatch.BufferIntegrationTest" time="0.003"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

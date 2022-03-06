@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'net.driftverse'
-version = '1.0.0-SNAPSHOT'
+version = ''
 
 repositories {
     mavenCentral()
@@ -39,6 +39,7 @@ configurations {
 }
 
 def targetJavaVersion = 17
+
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
