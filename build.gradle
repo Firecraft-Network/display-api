@@ -88,16 +88,16 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
 
-            groupId = group
-            artifactId = name
-            version = version
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
 
             from components.java
 
             pom {
-                name = name
-                description = description
-                url = website
+                name = project.name
+                description = project.description
+                url = project.website
                 inceptionYear = "2020"
                 packaging = 'jar'
 
