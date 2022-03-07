@@ -152,3 +152,11 @@ javadoc {
 artifacts {
     archives javadocJar, sourcesJar
 }
+
+pgp {
+    sign {
+        signer {
+            userId = ossrhUsername
+        }
+    }
+}
