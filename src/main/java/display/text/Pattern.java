@@ -1,12 +1,11 @@
 package display.text;
 
-import java.util.List;
-import java.util.function.BiFunction;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.TextComponent.Builder;
 import net.kyori.adventure.text.format.TextColor;
+
+
+import java.util.function.BiFunction;
 
 public interface Pattern {
 
@@ -116,7 +115,7 @@ public interface Pattern {
 			int colors = s.colors();
 			int length = s.textLength();
 
-			Builder builder = Component.text();
+			TextComponent.Builder builder = Component.text();
 
 			for (int i = 0; i < length; ++i) {
 

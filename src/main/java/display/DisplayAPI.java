@@ -1,6 +1,5 @@
 package display;
 
-import com.sun.source.util.Plugin;
 import display.api.Buffer;
 import display.api.Display;
 import display.api.Stage;

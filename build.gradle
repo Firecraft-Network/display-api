@@ -1,10 +1,23 @@
 plugins {
-    id 'java-library'
     id 'maven-publish'
-    id 'signing'
 }
+apply plugin: 'java'
+apply plugin: 'signing'
+apply plugin: 'maven-publish'
 
 group = "net.driftverse"
+def targetJavaVersion = 17
+
+if (!project.hasProperty("ossrhUsername")) { //so CI doesn't break
+    project.ext.ossrhUsername = "foo"
+    project.ext.ossrhPassword = "foo"
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
 
 ext {
     apiVersion = apiVersion
@@ -15,8 +28,7 @@ ext {
 repositories {
     mavenCentral()
     maven {
-        name = 'papermc-repo'
-        url = 'https://papermc.io/repo/repository/maven-public/'
+        url = uri("https://papermc.io/repo/repository/maven-public/")
     }
     maven {
         name = 'sonatype'
@@ -26,8 +38,7 @@ repositories {
 
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:" + apiVersion + "-R0.1-SNAPSHOT")
-    implementation("org.projectlombok:lombok:1.18.22")
+    compileOnly("io.papermc.paper:paper-api:"+apiVersion +"-R0.1-SNAPSHOT")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("log4j:log4j:1.2.17")
     testImplementation("com.github.seeseemelk:MockBukkit-v1.18:1.15.5")
@@ -36,23 +47,13 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
 
 configurations {
     testCompile.extendsFrom(compileOnly)
-}
-
-def targetJavaVersion = 17
-
-java {
-    withJavadocJar();  // Generate Javadocs
-    withSourcesJar(); // Generate sources
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -71,9 +72,19 @@ processResources {
 }
 
 
-publish {
-    publications {
+publishing {
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = project.ext.ossrhUsername
+                password = project.ext.ossrhPassword
+            }
+        }
+    }
 
+    publications {
         mavenJava(MavenPublication) {
 
             groupId = group
@@ -86,7 +97,8 @@ publish {
                 name = name
                 description = description
                 url = website
-                inceptionYear = 2020
+                inceptionYear = "2020"
+                packaging = 'jar'
 
                 licenses {
                     license {
@@ -107,12 +119,6 @@ publish {
                     }
                 }
 
-                scm {
-                    connection = 'scm:git:gi:github.com/Driftverse/display-api.git'
-                    developerConnection = 'scm:git:shh:github.com/Driftverse/display-api.git'
-                    url = website
-                }
-
             }
 
         }
@@ -120,11 +126,11 @@ publish {
 
     repositories {
         maven {
-            name = 'ossrh'
+            name = 'OSSRH'
             url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
             credentials {
-                username = project.properties["sonatypeUsername"]
-                password = project.properties["sonatypePassword"]
+                username = project.ext.ossrhUsername
+                password = project.ext.ossrhPassword
             }
         }
     }
@@ -135,22 +141,11 @@ signing {
 }
 
 javadoc {
-    options.html5 = JavaVersion.current().isJava9Compatible()
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
 }
 
-extraArchive {
-    sources = true
-    tests = true
-    javadoc = true
-}
-
-nexus {
-    sign = true
-    repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-    snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-}
-
-nexusStaging {
-    packageGroup = group //optional if packageGroup == project.getGroup()
-    stagingProfileId = "yourStagingProfileId" //when not defined will be got from server using "packageGroup"
+artifacts {
+    archives javadocJar, sourcesJar
 }
