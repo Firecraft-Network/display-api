@@ -23,8 +23,7 @@ public class BufferIntegrationTest {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	Buffer<Integer, Integer, Integer> buffer(boolean intervalSupport) {
-		return (Buffer) Buffer.builder().slot(0).animator(new NumAnimator()).animations(List.of(frames))
-				.timings(timings).intervalSupport(intervalSupport).build();
+		return new Buffer<>(intervalSupport, new NumAnimator(), 1, timings, List.of(frames));
 	}
 
 	@Test

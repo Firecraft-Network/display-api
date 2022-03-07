@@ -1,9 +1,6 @@
 package display.hyleo;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import org.bukkit.Bukkit;
@@ -18,6 +15,7 @@ import org.bukkit.scoreboard.Team;
 import display.api.Buffer;
 import display.text.TextAnimation;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 
 public class ScoreboardUtil {
 
@@ -25,7 +23,7 @@ public class ScoreboardUtil {
 
 	private static final Map<Team, String> fakePlayers = new HashMap<>(16 * Bukkit.getMaxPlayers()); // 16 sidebar lines
 																										// per player
-	// All displayslots for a dummy objective
+	// All displaySlots for a dummy objective
 	private static final Map<String, String> objectiveAliases = new HashMap<>(DisplaySlot.values().length);
 
 	static {
@@ -34,19 +32,19 @@ public class ScoreboardUtil {
 	}
 
 	/**
-	 * Creates an invisible player name of chatcolors with a chatcolor reset
+	 * Creates an invisible player name of chat colors with a chat color reset
 	 * trailing. This name is used to register scores to a fake player to appear on
 	 * a sidebar.
 	 * 
 	 * For sidebars to work as a display, we assign a fake player to a team with a
 	 * score (the line number). The prefix and suffix are used for displaying text.
 	 * 
-	 * This needs to be chatcolors (which can not be seen as text characters) so a
+	 * This needs to be chat colors (which can not be seen as text characters) so a
 	 * set of text does not appear on the sidebar between the lines prefix and
 	 * suffix.
 	 * 
 	 * @param team to create a fake player for.
-	 * @return A length of 7 chatcolors with a rest on the end
+	 * @return A length of 7 chat colors with a rest on the end
 	 */
 	public static String fakePlayer(Team team) {
 
@@ -61,7 +59,7 @@ public class ScoreboardUtil {
 		int hashCode = team.getName().hashCode();
 
 		IntStream.range(0, 6)
-				.forEach(i -> entry.append(ChatColor.getByChar(Integer.toHexString((hashCode * i) % 16)).toString()));
+				.forEach(i -> entry.append(Objects.requireNonNull(ChatColor.getByChar(Integer.toHexString((hashCode * i) % 16)))));
 
 		fakePlayer = entry.toString() + ChatColor.RESET;
 
@@ -84,7 +82,7 @@ public class ScoreboardUtil {
 	 * changing the criteria of an objective. They have the Display and the original
 	 * functionality.
 	 * 
-	 * WARNING: This is still a some what limiting system. A display slot can only
+	 * WARNING: This is still a somewhat limiting system. A display slot can only
 	 * have one of each criteria type. Ex: There can not be 2 objectives with player
 	 * kill criteria assigned to the same DisplaySlot
 	 * 
@@ -143,12 +141,12 @@ public class ScoreboardUtil {
 
 			Score score = previous.getScore(entry);
 
-			Player theroetical = Bukkit.getPlayerExact(entry); // Is a real player assigned
+			Player theoretical = Bukkit.getPlayerExact(entry); // Is a real player assigned
 			boolean exists = ScoreboardUtil.fakeExists(scoreboard.getEntryTeam(entry)); // Is a fake player assigned
 
-			// We dont want to copy other entries that do not belong to us from the
+			// We don't want to copy other entries that do not belong to us from the
 			// objective
-			if (!score.isScoreSet() || (theroetical == null && !exists)) {
+			if (!score.isScoreSet() || (theoretical == null && !exists)) {
 				continue;
 			}
 
@@ -163,8 +161,8 @@ public class ScoreboardUtil {
 
 	}
 
-	public static void score(Player boardOwner, Player entry, DisplaySlot slot, Integer score) {
-		Score s = scoreboard(boardOwner).getObjective(slot).getScore(entry);
+	public static void score(Player player, String entry, DisplaySlot slot, Integer score) {
+		Score s = Objects.requireNonNull(getOrRegisterObjective(player, slot)).getScore(entry);
 
 		if (score == null) {
 			s.resetScore();
@@ -251,12 +249,12 @@ public class ScoreboardUtil {
 		return (correctElement || team == null) && player != null ? player.getName() : ScoreboardUtil.fakePlayer(team);
 	}
 
-	public static void intializeDestinations(Player player, List<Destination> destinations) {
+	public static void initializeDestinations(Player player, @NotNull List<Destination> destinations) {
 
 		for (Destination destination : destinations) {
 
 			if (destination.isUnknown()) {
-				throw new RuntimeException("Unknown Board Destination: " + destination.toString());
+				throw new RuntimeException("Unknown Board Destination: " + destination);
 			}
 
 			DisplaySlot slot = destination.slot();
@@ -275,7 +273,7 @@ public class ScoreboardUtil {
 			}
 			// Will only set the fake/real players score if the score is set
 			if (score != null) {
-				getOrRegisterObjective(player, slot).getScore(playerName).setScore(score);
+				score(player, playerName, slot, score);
 			}
 
 		}
@@ -285,6 +283,7 @@ public class ScoreboardUtil {
 
 		Scoreboard scoreboard = objective.getScoreboard();
 
+		assert scoreboard != null;
 		for (String entry : scoreboard.getEntries()) {
 			if (objective.getScore(entry).isScoreSet()) {
 				return true;

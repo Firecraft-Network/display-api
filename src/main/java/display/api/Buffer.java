@@ -45,9 +45,8 @@ public final class Buffer<Slot, Animation, Frame> {
 	private final Map<Animation, Integer> frames = new HashMap<>();
 
 	@SuppressWarnings("unchecked")
-	@Builder
-	public Buffer(boolean intervalSupport, Slot slot, Logger logger, Timings timings,
-			@SuppressWarnings("rawtypes") Animator animator, List<Animation> animations) {
+	public Buffer(boolean intervalSupport, Animator<Animation, Frame> animator,  Slot slot,  Timings timings,
+			List<Animation> animations) {
 		this.intervalSupport = intervalSupport;
 		this.slot = slot;
 		this.timings = timings;

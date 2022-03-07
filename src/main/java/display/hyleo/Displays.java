@@ -130,7 +130,7 @@ public class Displays {
 					DisplayAPI.tablist().schedules().get(p).values());
 
 			// Check if we have any assigned buffers that are not being destroyed or that
-			// are complelted
+			// are completed
 			schedule.removeIf(b -> List.of(Stage.DESTROY, Stage.COMPLETE).contains(b.stage()));
 
 			if (schedule.isEmpty()) { // If nothing will remain after this method call, clear it
@@ -156,7 +156,7 @@ public class Displays {
 		return (p, buffers) -> {
 			List<Destination> destinations = new ArrayList<>();
 			buffers.forEach(b -> {
-				destinations.add(b.slot()); // Copy all desinations
+				destinations.add(b.slot()); // Copy all destinations
 				b.poll(); // Increment all buffers
 			});
 
@@ -172,8 +172,8 @@ public class Displays {
 			// Pad the sidebar with blank lines between set lines
 			ScoreboardUtil.padSidebar(destinations, buffers);
 
-			// Creates teams from destinations & adds fake/real ps accordingly
-			ScoreboardUtil.intializeDestinations(p, destinations);
+			// Create teams from destinations & adds fake/real ps accordingly
+			ScoreboardUtil.initializeDestinations(p, destinations);
 		};
 	}
 

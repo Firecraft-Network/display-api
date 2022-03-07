@@ -1,6 +1,5 @@
 package display.api;
 
-import display.api.Buffer.BufferBuilder;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
@@ -89,15 +88,9 @@ public final class Display<Slot, Animation, Frame> {
 		setup(player);
 		Map<Slot, Buffer<Slot, Animation, Frame>> schedule = schedules.get(player);
 
-		BufferBuilder<Slot, Animation, Frame> builder = Buffer.builder();
+		Buffer<Slot, Animation, Frame> buffer = new Buffer<>(intervalSupport(), animator, slot, timings, List.of(animations));
 
-		builder.slot(slot);
-		builder.animator(animator);
-		builder.timings(timings);
-		builder.intervalSupport(intervalSupport());
-		builder.animations(List.of(animations));
-
-		schedule.put(slot, builder.build());
+		schedule.put(slot, buffer);
 
 	}
 
