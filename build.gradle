@@ -13,33 +13,15 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
-dependencies {
-    compileOnly("io.papermc.paper:paper-api:" + apiVersion + "-R0.1-SNAPSHOT")
-    implementation("org.apache.commons:commons-lang3:3.12.0")
-    implementation("log4j:log4j:1.2.17")
-    testImplementation("com.github.seeseemelk:MockBukkit-v1.18:1.15.5")
-    testImplementation("junit:junit:4.12")
-    testImplementation("org.mockito:mockito-all:1.10.19")
-
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-}
-
-
-if (!project.hasProperty("ossrhUsername")) { //so CI doesn't break
-    project.ext.ossrhUsername = "foo"
-    project.ext.ossrhPassword = "foo"
-}
-
-
-
 ext {
     apiVersion = apiVersion
     description = description
     website = website
+}
+
+if (!project.hasProperty("ossrhUsername")) { //so CI doesn't break
+    project.ext.ossrhUsername = "foo"
+    project.ext.ossrhPassword = "foo"
 }
 
 repositories {
@@ -50,28 +32,6 @@ repositories {
     maven {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
-    }
-}
-
-
-
-
-configurations {
-    testCompile.extendsFrom(compileOnly)
-}
-
-tasks.withType(JavaCompile).configureEach {
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        options.release = targetJavaVersion
-    }
-}
-
-processResources {
-    def props = [name: rootProject.name, version: version, apiVersion: apiVersion, description: project.description, website: website]
-    inputs.properties props
-    filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
-        expand props
     }
 }
 
@@ -149,5 +109,33 @@ javadoc {
     enabled = false
     if (JavaVersion.current().isJava9Compatible()) {
         options.addBooleanOption('html5', true)
+    }
+}
+
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:" + apiVersion + "-R0.1-SNAPSHOT")
+    implementation("org.apache.commons:commons-lang3:3.12.0")
+    implementation("log4j:log4j:1.2.17")
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.18:1.15.5")
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.mockito:mockito-all:1.10.19")
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+}
+
+configurations {
+    testCompile.extendsFrom(compileOnly)
+}
+
+processResources {
+    def props = [name: rootProject.name, version: version, apiVersion: apiVersion, description: project.description, website: website]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
     }
 }
