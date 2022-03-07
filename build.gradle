@@ -39,7 +39,6 @@ repositories {
 publishing {
     repositories {
         maven {
-            name = "OSSRH"
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
                 username = project.ext.ossrhUsername
@@ -51,14 +50,20 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
 
-            groupId = project.getGroup()
             artifactId = project.getName()
-            version = project.getVersion()
 
             from components.java
 
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
             pom {
-                name = project.name
+                name = project.getName()
                 description = project.description
                 url = project.website
                 inceptionYear = "2020"
@@ -69,17 +74,6 @@ publishing {
                         name = 'GPL-3.0 License'
                         url = 'https://www.gnu.org/licenses/gpl-3.0.html'
                         distribution = 'repo'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'tylerfrydenlund'
-                        name = 'Tyler Frydenlund'
-                    }
-                    developer {
-                        id = 'laytonromine'
-                        name = 'Layton Romine'
                     }
                 }
 
