@@ -19,6 +19,10 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
+subprojects {
+    tasks.withType(Javadoc).all { enabled = false }
+}
+
 ext {
     apiVersion = apiVersion
     description = description
