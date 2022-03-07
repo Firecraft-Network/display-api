@@ -67,7 +67,7 @@
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
-  <component name="RunManager" selected="Gradle.display-api">
+  <component name="RunManager" selected="Shell Script.gradlew">
     <configuration name="display-api [javadoc]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -130,8 +130,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.display-api" />
         <item itemvalue="Shell Script.gradlew" />
+        <item itemvalue="Gradle.display-api" />
         <item itemvalue="Gradle.display-api [javadoc]" />
       </list>
     </recent_temporary>
