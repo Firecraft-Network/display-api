@@ -2,6 +2,12 @@ package display.api;
 
 import java.util.List;
 
+/**
+ *
+ * @param <Animation> The type of animation to be played.
+ * @param <Frame> 	The type of frame to be played.
+ *
+ */
 public interface Animator<Animation, Frame> {
 
 	/**
@@ -10,7 +16,8 @@ public interface Animator<Animation, Frame> {
 	 * 
 	 * Ex: Multiple text animations on the same slot will result in the text being
 	 * combined into one line
-	 * 
+	 *
+	 * @param frames to be combined into one frame
 	 * @return a function describing how to handle multiple frames
 	 */
 	Frame combine(List<Frame> frames);
@@ -25,8 +32,7 @@ public interface Animator<Animation, Frame> {
 	 * length may change in duration depending on the new options. Options are
 	 * updated at the end of each cycle to ensure smooth generation of frames.
 	 * 
-	 * @param id      attached to the specific set of options
-	 * @param options used to calculate the current cycle length
+	 * @param animation used to calculated the current cycle length
 	 * @return the current cycle length in ticks
 	 * 
 	 * @since 1.0.0
@@ -38,8 +44,9 @@ public interface Animator<Animation, Frame> {
 	 * can be accessed randomly using the number of ticks between 0-(frames - 1).
 	 * This is a non linear method. At any point it should be able to provide an
 	 * output from the given options and ticks.
-	 * 
-	 * @param ticks into the cycle
+	 *
+	 * @param animation used to calculate the current frame
+	 * @param frame into the cycle
 	 * 
 	 * @return The frame at the number of ticks in time
 	 * @since 1.0.0

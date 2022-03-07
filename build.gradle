@@ -19,9 +19,6 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
-subprojects {
-    tasks.withType(Javadoc).all { enabled = false }
-}
 
 ext {
     apiVersion = apiVersion
@@ -42,7 +39,7 @@ repositories {
 
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:"+apiVersion +"-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:" + apiVersion + "-R0.1-SNAPSHOT")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("log4j:log4j:1.2.17")
     testImplementation("com.github.seeseemelk:MockBukkit-v1.18:1.15.5")
@@ -146,8 +143,8 @@ signing {
 
 javadoc {
     failOnError = false
-
-    if(JavaVersion.current().isJava9Compatible()) {
+    enabled = false
+    if (JavaVersion.current().isJava9Compatible()) {
         options.addBooleanOption('html5', true)
     }
 }
