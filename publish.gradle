@@ -1,5 +1,5 @@
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
+//apply plugin: 'signing'
 
 if (!project.hasProperty("ossrhUsername")) { //so CI doesn't break
     project.ext.ossrhUsername = "no username set"
