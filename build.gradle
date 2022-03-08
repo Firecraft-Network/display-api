@@ -1,9 +1,7 @@
-plugins {
-    id 'maven-publish'
-}
 apply plugin: 'java'
 apply plugin: 'signing'
 apply plugin: 'maven-publish'
+apply from: 'publish.gradle'
 
 group = "net.driftverse"
 
@@ -11,17 +9,6 @@ java {
     withJavadocJar()
     withSourcesJar()
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
-
-ext {
-    apiVersion = apiVersion
-    description = description
-    website = website
-}
-
-if (!project.hasProperty("ossrhUsername")) { //so CI doesn't break
-    project.ext.ossrhUsername = "foo"
-    project.ext.ossrhPassword = "foo"
 }
 
 repositories {
@@ -32,77 +19,6 @@ repositories {
     maven {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
-    }
-}
-
-
-publishing {
-    repositories {
-        maven {
-            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = project.ext.ossrhUsername
-                password = project.ext.ossrhPassword
-            }
-        }
-    }
-
-    publications {
-        mavenJava(MavenPublication) {
-
-            artifactId = project.getName()
-
-            from components.java
-
-            versionMapping {
-                usage('java-api') {
-                    fromResolutionOf('runtimeClasspath')
-                }
-                usage('java-runtime') {
-                    fromResolutionResult()
-                }
-            }
-            pom {
-                name = project.getName()
-                description = project.description
-                url = project.website
-                inceptionYear = "2020"
-                packaging = 'jar'
-
-                licenses {
-                    license {
-                        name = 'GPL-3.0 License'
-                        url = 'https://www.gnu.org/licenses/gpl-3.0.html'
-                        distribution = 'repo'
-                    }
-                }
-
-            }
-
-        }
-    }
-
-    repositories {
-        maven {
-            name = 'OSSRH'
-            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-            credentials {
-                username = project.ext.ossrhUsername
-                password = project.ext.ossrhPassword
-            }
-        }
-    }
-}
-
-signing {
-    sign publishing.publications.mavenJava
-}
-
-javadoc {
-    failOnError = false
-    enabled = false
-    if (JavaVersion.current().isJava9Compatible()) {
-        options.addBooleanOption('html5', true)
     }
 }
 
@@ -126,7 +42,10 @@ configurations {
 }
 
 processResources {
-    def props = [name: rootProject.name, version: version, apiVersion: apiVersion, description: project.description, website: website]
+    def props = [name: project.property("name"), version: project.property("version"),
+                 apiVersion:  project.property("apiVersion"), description: project.property("description"),
+                 website: project.property("website")]
+
     inputs.properties props
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {

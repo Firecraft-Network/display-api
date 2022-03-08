@@ -1,0 +1,99 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+if (!project.hasProperty("ossrhUsername")) { //so CI doesn't break
+    project.ext.ossrhUsername = "no username set"
+}
+
+if (!project.hasProperty("ossrhPassword")) { //so CI doesn't break
+    project.ext.ossrhPassword = "no password set"
+}
+println("ossrhUsername: ${project.ext.ossrhUsername}")
+println "secretKeyRingFile: ${project.getProperties()['secretKeyRingFile']}"
+
+def isReleaseBuild() {
+    return !version.contains("SNAPSHOT")
+}
+
+def getReleaseRepositoryUrl() {
+    return 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+}
+
+def getSnapshotRepositoryUrl() {
+    return 'https://oss.sonatype.org/content/repositories/snapshots/'
+}
+
+publishing {
+    repositories {
+        maven {
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = project.property("ossrhUsername")
+                password = project.property("ossrhPassword")
+            }
+        }
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+
+            artifactId = project.getName()
+
+            from components.java
+
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = project.getName()
+                description = project.property("description")
+                url = project.property("website")
+                inceptionYear = "2020"
+                packaging = 'jar'
+
+                licenses {
+                    license {
+                        name = 'GPL-3.0 License'
+                        url = 'https://www.gnu.org/licenses/gpl-3.0.html'
+                        distribution = 'repo'
+                    }
+                }
+
+            }
+
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'OSSRH'
+            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            credentials {
+                username = project.property("ossrhUsername")
+                password = project.property("ossrhPassword")
+
+            }
+        }
+    }
+}
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+
+    sign publishing.publications.mavenJava
+}
+
+javadoc {
+    failOnError = false
+    enabled = false
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
