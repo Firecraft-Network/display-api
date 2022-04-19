@@ -90,6 +90,10 @@ signing {
     sign publishing.publications.mavenJava
 }
 
+task PGP_SIGN(type: Sign) {
+    signing.sign(type)
+}
+
 javadoc {
     failOnError = false
     enabled = false

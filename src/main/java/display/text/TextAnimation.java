@@ -47,6 +47,8 @@ public class TextAnimation {
 
 	public int colors() {
 
+		TextAnimation animation = TextAnimation.bulder().inverse(true).pattern(null).create();
+
 		return palette().size();
 	}
 

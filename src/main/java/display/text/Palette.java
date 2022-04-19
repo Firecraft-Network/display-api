@@ -39,6 +39,7 @@ public class Palette {
 
 	public TextColor color(int color) {
 
+
 		TextColor color1 = colors().get(firstColor(depth, color));
 
 		TextColor color2 = colors().get(secondColor(colors.size(), depth, color));
